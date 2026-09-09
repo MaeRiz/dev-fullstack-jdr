@@ -1,10 +1,18 @@
 <script setup>
 import { computed, nextTick, ref } from 'vue';
-import { campagnes, objets, indices, modelesQuetes, libelle } from '@/services/catalogueChapitres';
+import { campagnes, modelesQuetes, libelle } from '@/services/catalogueChapitres';
+import { utiliserBibliotheque } from '@/services/bibliotheque';
+import { choixContenus } from '@/services/contenus';
 import { chargerChapitres, sauvegarderChapitres, formulaireVide, creerChapitre, modifierChapitre, dupliquerChapitre, deplacerQuete } from '@/services/chapitres';
 
 const chapitres = ref([]);
 const formulaire = ref(null);
+const { contenus, objetsBibliotheque, indicesBibliotheque, erreurBibliotheque, lectureImpossible } = utiliserBibliotheque();
+const objets = computed(() => contenus.value.filter(contenu => contenu.type === 'objet'));
+const indices = computed(() => contenus.value.filter(contenu => contenu.type === 'indice'));
+const choixRequis = computed(() => choixContenus(contenus.value, 'objet', formulaire.value?.objetsRequis));
+const choixRecompenses = computed(() => choixContenus(contenus.value, 'objet', formulaire.value?.recompensesObjets.map(objet => objet.objetId)));
+const choixIndices = computed(() => choixContenus(contenus.value, 'indice', formulaire.value?.recompensesIndices));
 const editionId = ref(null);
 const suppressionId = ref(null);
 const erreur = ref('');
@@ -52,7 +60,7 @@ async function fermer() {
   boutonAjouter.value?.focus();
 }
 function enregistrerListe(liste, confirmation) {
-  if (bloque.value) return false;
+  if (bloque.value || lectureImpossible.value) return false;
   try {
     sauvegarderChapitres(liste);
     chapitres.value = liste;
@@ -100,9 +108,10 @@ function ajouterQuete() {
   <main class="chapitres-page">
     <header class="entete">
       <div><h1>Chapitres <span class="compteur">{{ chapitres.length }}</span></h1><p>Prépare les étapes de tes campagnes et leurs quêtes.</p></div>
-      <button ref="boutonAjouter" :disabled="bloque || !!formulaire" @click="ouvrir()">Ajouter un chapitre</button>
+      <button ref="boutonAjouter" :disabled="bloque || lectureImpossible || !!formulaire" @click="ouvrir()">Ajouter un chapitre</button>
     </header>
     <p v-if="erreur" class="erreur" role="alert">{{ erreur }}</p>
+    <p v-if="erreurBibliotheque" class="erreur" role="alert">{{ erreurBibliotheque }}</p>
     <p class="confirmation" role="status">{{ message }}</p>
 
     <section v-if="formulaire" class="panneau" aria-labelledby="titre-formulaire">
@@ -127,9 +136,9 @@ function ajouterQuete() {
           <p class="aide">Le joueur devra saisir ce mot de passe exact et posséder tous les objets cochés. Ils ne seront pas consommés.</p>
           <p>Objets nécessaires (facultatifs)</p>
           <div class="choix">
-            <label v-for="objet in objets" :key="objet.id" class="case"><input v-model="formulaire.objetsRequis" type="checkbox" :value="objet.id" />{{ objet.nom }}</label>
+            <label v-for="objet in choixRequis" :key="objet.id" class="case"><input v-model="formulaire.objetsRequis" type="checkbox" :value="objet.id" />{{ objet.nom }}</label>
           </div>
-          <p v-if="formulaire.objetsRequis.some(id => !objets.some(objet => objet.id === id))" class="aide">Certains objets enregistrés sont absents du catalogue provisoire ; leurs références sont conservées.</p>
+          <p v-if="!objetsBibliotheque.length" class="aide">Aucun objet disponible. Crée les objets dans <RouterLink to="/mj/contenus">la bibliothèque</RouterLink>.</p>
         </fieldset>
         <fieldset>
           <legend>Résolution et récompenses</legend>
@@ -137,7 +146,7 @@ function ajouterQuete() {
           <p class="aide">Les mots de passe peuvent rester vides pendant la préparation. Ils doivent être renseignés pour les actions des joueurs.</p>
           <p>Objets à donner au joueur qui termine le chapitre (facultatifs)</p>
           <div class="choix">
-            <label v-for="objet in objets" :key="objet.id" class="case"><input type="checkbox" :checked="formulaire.recompensesObjets.some(entree => entree.objetId === objet.id)" @change="choisirRecompense(objet.id, $event.target.checked)" />{{ objet.nom }}</label>
+            <label v-for="objet in choixRecompenses" :key="objet.id" class="case"><input type="checkbox" :checked="formulaire.recompensesObjets.some(entree => entree.objetId === objet.id)" @change="choisirRecompense(objet.id, $event.target.checked)" />{{ objet.nom }}</label>
           </div>
           <div class="champs">
             <label v-for="recompense in formulaire.recompensesObjets" :key="recompense.objetId" :for="`quantite-${recompense.objetId}`">Quantité : {{ libelle(objets, recompense.objetId) }}
@@ -145,7 +154,8 @@ function ajouterQuete() {
             </label>
           </div>
           <p>Indices partagés avec la campagne (facultatifs)</p>
-          <div class="choix"><label v-for="indice in indices" :key="indice.id" class="case"><input v-model="formulaire.recompensesIndices" type="checkbox" :value="indice.id" />{{ indice.nom }}</label></div>
+          <div class="choix"><label v-for="indice in choixIndices" :key="indice.id" class="case"><input v-model="formulaire.recompensesIndices" type="checkbox" :value="indice.id" />{{ indice.nom }}</label></div>
+          <p v-if="!indicesBibliotheque.length" class="aide">Aucun indice disponible. Crée les indices dans <RouterLink to="/mj/contenus">la bibliothèque</RouterLink>.</p>
         </fieldset>
         <fieldset>
           <legend>Quêtes du chapitre</legend>

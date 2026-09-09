@@ -4,6 +4,9 @@ import InventaireJoueur from '@/components/InventaireJoueur.vue';
 import { modifierInventaire, nomObjet } from '@/services/inventaire';
 import { chargerJoueurs, creerJoueur, modifierJoueur, filtrerJoueurs, dupliquerJoueur, sauvegarderJoueurs } from '@/services/joueurs';
 import { campagnesProvisoires, nomCampagne } from '@/services/campagnes';
+import { utiliserBibliotheque } from '@/services/bibliotheque';
+
+const { contenus, objetsBibliotheque, erreurBibliotheque, lectureImpossible } = utiliserBibliotheque();
 
 const joueurs = ref([]);
 const erreur = ref('');
@@ -97,10 +100,10 @@ function dupliquer(joueur) {
 
 function changerInventaire(joueur, objetId, quantite, action) {
   try {
-    const modifie = modifierInventaire(joueur, objetId, quantite, action);
+    const modifie = modifierInventaire(joueur, objetId, quantite, action, contenus.value);
     enregistrerListe(
       joueurs.value.map(element => element.id === joueur.id ? modifie : element),
-      `${nomObjet(objetId)} : ${quantite} ${action === 'donner' ? 'ajouté(s)' : 'retiré(s)'} pour ${joueur.nom}.`,
+      `${nomObjet(objetId, contenus.value)} : ${quantite} ${action === 'donner' ? 'ajouté(s)' : 'retiré(s)'} pour ${joueur.nom}.`,
     );
   } catch (cause) {
     erreur.value = cause.message;
@@ -127,6 +130,7 @@ function supprimer(joueur) {
     </header>
 
     <p v-if="erreur" class="erreur" role="alert">{{ erreur }}</p>
+    <p v-if="erreurBibliotheque" class="erreur" role="alert">{{ erreurBibliotheque }}</p>
     <p class="confirmation" role="status">{{ message }}</p>
 
     <section v-if="formulaire" class="panneau" aria-labelledby="titre-formulaire">
@@ -193,7 +197,7 @@ function supprimer(joueur) {
           <summary>Commentaire MJ</summary>
           <p class="texte">{{ joueur.commentaireMj }}</p>
         </details>
-        <InventaireJoueur :joueur="joueur" :desactive="!!formulaire || suppressionId === joueur.id"
+        <InventaireJoueur :joueur="joueur" :objets="objetsBibliotheque" :contenus="contenus" :desactive="lectureImpossible || !!formulaire || suppressionId === joueur.id"
           @modifier="(objetId, quantite, action) => changerInventaire(joueur, objetId, quantite, action)" />
         <div class="actions">
           <button type="button" class="secondaire" :disabled="!!formulaire" :aria-label="`Modifier ${joueur.nom}`" @click="ouvrirFormulaire(joueur)">Modifier</button>

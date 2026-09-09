@@ -1,14 +1,7 @@
-// Catalogue provisoire à remplacer par la bibliothèque d'objets du projet.
-export const objetsProvisoires = [
-  { id: 'cle', nom: 'Clé', description: 'Une petite clé en métal.' },
-  { id: 'potion', nom: 'Potion de soin', description: 'Une fiole de soin.' },
-  { id: 'corde', nom: 'Corde', description: 'Une corde pour explorer les lieux.' },
-  { id: 'torche', nom: 'Torche', description: 'Une source de lumière transportable.' },
-  { id: 'epee', nom: 'Épée', description: 'Une arme de mêlée.' },
-];
-
-export function nomObjet(objetId) {
-  return objetsProvisoires.find(objet => objet.id === objetId)?.nom ?? `Objet (${objetId})`;
+export function nomObjet(objetId, catalogue = []) {
+  const objet = catalogue.find(objet => objet.id === objetId && objet.type === 'objet');
+  if (objet) return `${objet.nom}${objet.archive ? ' (retiré de la bibliothèque)' : ''}`;
+  return `Objet indisponible (${objetId})`;
 }
 
 export function estInventaireValide(inventaire) {
@@ -19,14 +12,14 @@ export function estInventaireValide(inventaire) {
     && new Set(inventaire.map(entree => entree.objetId)).size === inventaire.length;
 }
 
-export function modifierInventaire(joueur, objetId, quantite, action) {
+export function modifierInventaire(joueur, objetId, quantite, action, catalogue = []) {
   if (!estInventaireValide(joueur.inventaire)) throw new Error('Inventaire invalide.');
   if (!Number.isSafeInteger(quantite) || quantite <= 0) {
     throw new Error('Saisis une quantité entière supérieure à zéro.');
   }
   if (!['donner', 'retirer'].includes(action)) throw new Error('Action inconnue.');
   const entree = joueur.inventaire.find(objet => objet.objetId === objetId);
-  if (action === 'donner' && !objetsProvisoires.some(objet => objet.id === objetId)) {
+  if (action === 'donner' && !catalogue.some(objet => objet.id === objetId && objet.type === 'objet' && !objet.archive)) {
     throw new Error('Sélectionne un objet du catalogue.');
   }
   if (action === 'retirer' && (!entree || quantite > entree.quantite)) {

@@ -4,6 +4,7 @@ import { computed, ref } from 'vue';
 const props = defineProps({
   type: { type: String, required: true },
   contenu: { type: Object, default: null },
+  desactive: { type: Boolean, default: false },
 });
 const emit = defineEmits(['sauvegarde', 'annuler']);
 
@@ -28,9 +29,10 @@ function gererSubmit() {
   };
   if (props.type === 'indice') contenu.texte = formulaire.value.texte.trim();
   else contenu.description = formulaire.value.description.trim();
-  emit('sauvegarde', contenu);
-  formulaire.value = { nom: '', description: '', texte: '', commentaire: '' };
-  erreur.value = '';
+  emit('sauvegarde', contenu, () => {
+    formulaire.value = { nom: '', description: '', texte: '', commentaire: '' };
+    erreur.value = '';
+  });
 }
 </script>
 
@@ -56,7 +58,7 @@ function gererSubmit() {
       </div>
       <p v-if="erreur" role="alert">{{ erreur }}</p>
       <div class="actions">
-        <button type="submit">{{ contenu ? 'Enregistrer' : 'Ajouter' }}</button>
+        <button type="submit" :disabled="desactive">{{ contenu ? 'Enregistrer' : 'Ajouter' }}</button>
         <button v-if="contenu" type="button" class="secondaire" @click="emit('annuler')">Annuler</button>
       </div>
     </form>

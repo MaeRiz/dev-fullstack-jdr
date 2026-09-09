@@ -1,13 +1,19 @@
 <script setup>
-import { ref } from 'vue';
-import { nomObjet, objetsProvisoires } from '@/services/inventaire';
+import { ref, watch } from 'vue';
+import { nomObjet as libelleObjet } from '@/services/inventaire';
 
-defineProps({
+const props = defineProps({
   joueur: { type: Object, required: true },
   desactive: { type: Boolean, default: false },
+  objets: { type: Array, required: true },
+  contenus: { type: Array, required: true },
 });
+const nomObjet = id => libelleObjet(id, props.contenus);
 const emit = defineEmits(['modifier']);
-const objetId = ref(objetsProvisoires[0].id);
+const objetId = ref('');
+watch(() => props.objets, liste => {
+  if (!liste.some(objet => objet.id === objetId.value)) objetId.value = liste[0]?.id ?? '';
+}, { immediate: true });
 const quantite = ref(1);
 const quantitesRetrait = ref({});
 </script>
@@ -29,10 +35,11 @@ const quantitesRetrait = ref({});
         </form>
       </li>
     </ul>
-    <form class="don" @submit.prevent="emit('modifier', objetId, quantite, 'donner')">
+    <p v-if="!objets.length" class="aide">Aucun objet disponible. Ajoute un objet dans <RouterLink to="/mj/contenus">la bibliothèque</RouterLink>.</p>
+    <form v-else class="don" @submit.prevent="emit('modifier', objetId, quantite, 'donner')">
       <label :for="`objet-${joueur.id}`">Objet à donner
         <select :id="`objet-${joueur.id}`" v-model="objetId" :disabled="desactive">
-          <option v-for="objet in objetsProvisoires" :key="objet.id" :value="objet.id">{{ objet.nom }}</option>
+          <option v-for="objet in objets" :key="objet.id" :value="objet.id">{{ objet.nom }}</option>
         </select>
       </label>
       <label :for="`quantite-${joueur.id}`">Quantité
@@ -40,7 +47,7 @@ const quantitesRetrait = ref({});
       </label>
       <button type="submit" :disabled="desactive" :aria-label="`Donner un objet à ${joueur.nom}`">Donner</button>
     </form>
-    <p class="aide">{{ objetsProvisoires.find(objet => objet.id === objetId)?.description }}</p>
+    <p class="aide">{{ objets.find(objet => objet.id === objetId)?.description }}</p>
   </section>
 </template>
 

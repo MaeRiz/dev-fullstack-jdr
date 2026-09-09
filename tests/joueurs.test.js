@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { modifierInventaire } from '../src/services/inventaire.js';
+import { modifierInventaire as appliquerInventaire } from '../src/services/inventaire.js';
 import { chargerJoueurs, creerJoueur, modifierJoueur, filtrerJoueurs, dupliquerJoueur, sauvegarderJoueurs, JOUEURS_STORAGE_KEY } from '../src/services/joueurs.js';
 
 function stockageMemoire(contenu = null) {
@@ -12,6 +12,9 @@ function stockageMemoire(contenu = null) {
 }
 
 const champs = { nom: '  Aria  ', etat: 'vivant', description: 'Rôdeuse', commentaireMj: 'Un secret' };
+// Fixtures réservées aux tests : aucun objet n'est injecté dans l'application.
+const catalogue = ['cle', 'potion', 'corde'].map(id => ({ id, type: 'objet' }));
+const modifierInventaire = (joueur, id, quantite, action) => appliquerInventaire(joueur, id, quantite, action, catalogue);
 
 test('rattacher, transférer et détacher un joueur persiste sans perdre sa fiche ni son inventaire', () => {
   const stockage = stockageMemoire();
