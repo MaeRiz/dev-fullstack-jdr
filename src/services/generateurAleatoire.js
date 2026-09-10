@@ -1,16 +1,3 @@
-/**
- * Service de génération aléatoire d'objets et de lieux (Fonctionnalité bonus)
- *
- * Rappel des formats attendus par le sujet :
- * - Objet : { type: 'objet', nom: string, description: string, commentaire: string }
- * - Lieu  : { type: 'lieu',  nom: string, description: string, commentaire: string }
- */
-
-// ============================================================================
-// 1. BANQUES DE DONNÉES / DICTIONNAIRES DE MOTS
-// Tu peux enrichir, modifier ou renommer ces listes à ta guise !
-// ============================================================================
-
 export const DONNEES_OBJETS = {
   types: [
     "Épée",
