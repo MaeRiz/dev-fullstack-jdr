@@ -1,5 +1,8 @@
 <script setup>
-defineProps({ quetes: { type: Array, required: true } });
+defineProps({
+	quetes: { type: Array, required: true },
+	libelleChapitre: { type: Function, default: () => "" },
+});
 const emit = defineEmits(["modifier", "dupliquer", "supprimer"]);
 </script>
 
@@ -7,6 +10,7 @@ const emit = defineEmits(["modifier", "dupliquer", "supprimer"]);
 	<ul>
 		<li v-for="quete in quetes" :key="quete.id">
 			<h2>{{ quete.nom }}</h2>
+			<p>Chapitre : {{ libelleChapitre(quete.chapitreId) }}</p>
 			<p>État : {{ quete.etat }}</p>
 			<p v-if="quete.lieu">Lieu : {{ quete.lieu }}</p>
 			<p class="description">{{ quete.description || "Aucune description." }}</p>
