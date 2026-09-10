@@ -36,3 +36,8 @@ npm run dev
 ```sh
 npm run build
 ```
+
+## Fonctionnalités bonus
+
+- **Génération aléatoire d'objets et de lieux** : bouton d'aide à la création dans le formulaire de contenus de l'interface MJ.
+
