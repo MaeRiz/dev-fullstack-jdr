@@ -38,7 +38,7 @@ function enregistrer() {
   return succes;
 }
 
-function sauvegarder(contenu, terminer) {
+function sauvegarderContenu(contenu, terminer) {
   try {
     let id = contenuSelectionne.value?.id;
     if (id) {
@@ -57,11 +57,11 @@ function sauvegarder(contenu, terminer) {
   }
 }
 
-function modifier(id) {
+function modifierContenu(id) {
   contenuSelectionne.value = store.parId(id);
 }
 
-function dupliquer(id) {
+function dupliquerContenu(id) {
   const contenu = store.parId(id);
   if (!contenu) return;
   try {
@@ -72,7 +72,7 @@ function dupliquer(id) {
   }
 }
 
-function supprimer(id) {
+function supprimerContenu(id) {
   const contenu = store.parId(id);
   if (!contenu || !confirm(`Retirer « ${contenu.nom} » de la bibliothèque ? Les joueurs et chapitres qui l’utilisent le conserveront.`)) return;
   try {
@@ -103,11 +103,11 @@ function supprimer(id) {
         <p v-if="contenusFiltres.length === 0">Aucun contenu dans cette catégorie. Utilisez le formulaire pour en ajouter un.</p>
         <p v-else-if="resultats.length === 0">Aucun contenu ne correspond à votre recherche.</p>
         <ContenuListe v-else :contenus="resultats"
-          @modifier="modifier" @dupliquer="dupliquer" @supprimer="supprimer" />
+          @modifier="modifierContenu" @dupliquer="dupliquerContenu" @supprimer="supprimerContenu" />
       </section>
       <ContenuFormulaire :key="contenuSelectionne ? contenuSelectionne.id : typeSelectionne"
         :type="typeSelectionne" :contenu="contenuSelectionne" :desactive="store.lectureImpossible"
-        @sauvegarde="sauvegarder" @annuler="contenuSelectionne = null" />
+        @sauvegarde="sauvegarderContenu" @annuler="contenuSelectionne = null" />
     </div>
   </main>
 </template>
