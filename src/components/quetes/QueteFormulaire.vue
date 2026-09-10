@@ -104,23 +104,36 @@ function gererSubmit() {
 
 			<div class="actions">
 				<button type="submit">{{ quete ? "Enregistrer" : "Ajouter" }}</button>
-				<button v-if="quete" type="button" @click="emit('annuler')">Annuler</button>
+				<button v-if="quete" type="button" class="secondaire" @click="emit('annuler')">
+					Annuler
+				</button>
 			</div>
 		</form>
 	</section>
 </template>
 
 <style scoped>
+section {
+	padding: 1rem;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	background: #f3f4f6;
+}
+
+h2 {
+	margin-top: 0;
+	font-size: 1.2rem;
+}
+
 form {
 	display: flex;
 	flex-direction: column;
-	gap: 0.7rem;
-	max-width: 26rem;
+	gap: 1rem;
 }
 
 label {
 	display: block;
-	margin-bottom: 0.25rem;
+	margin-bottom: 0.4rem;
 }
 
 input,
@@ -128,14 +141,40 @@ select,
 textarea {
 	box-sizing: border-box;
 	width: 100%;
+	padding: 0.6rem;
+	border: 1px solid #999;
+	border-radius: 4px;
+	font: inherit;
 }
 
-[role="alert"] {
-	color: #a02020;
+textarea {
+	resize: vertical;
 }
 
 .actions {
 	display: flex;
+	flex-wrap: wrap;
 	gap: 0.5rem;
+}
+
+button {
+	padding: 0.6rem 1rem;
+	border: 1px solid #215ad3;
+	border-radius: 4px;
+	background: #215ad3;
+	color: white;
+	font: inherit;
+	cursor: pointer;
+}
+
+button.secondaire {
+	border-color: #999;
+	background: white;
+	color: #263238;
+}
+
+[role="alert"] {
+	margin: 0;
+	color: #a02020;
 }
 </style>

@@ -73,17 +73,51 @@ watch(
 </script>
 
 <template>
-	<h1>Fiche campagne</h1>
+	<main class="campagnes-page">
+		<h1>Fiche campagne</h1>
+		<p v-if="messageStockage" role="alert">{{ messageStockage }}</p>
 
-	<p v-if="messageStockage" role="alert">{{ messageStockage }}</p>
+		<div class="colonnes">
+			<section aria-label="Liste des campagnes">
+				<p v-if="campagnes.length === 0">
+					Aucune campagne pour le moment. Utilisez le formulaire pour en ajouter une.
+				</p>
+				<CampagneListe
+					v-else
+					:campagnes="campagnes"
+					@modifier="modifier"
+					@dupliquer="dupliquer"
+					@supprimer="supprimer"
+				/>
+			</section>
 
-	<p v-if="campagnes.length === 0">Aucune campagne pour le moment. Utilisez le formulaire pour en ajouter une.</p>
-	<CampagneListe v-else :campagnes="campagnes" @modifier="modifier" @dupliquer="dupliquer" @supprimer="supprimer" />
-
-	<CampagneFormulaire
-		:key="campagneEnEdition ? campagneEnEdition.id : 'nouvelle'"
-		:campagne="campagneEnEdition"
-		@sauvegarde="sauvegarder"
-		@annuler="campagneEnEdition = null"
-	/>
+			<CampagneFormulaire
+				:key="campagneEnEdition ? campagneEnEdition.id : 'nouvelle'"
+				:campagne="campagneEnEdition"
+				@sauvegarde="sauvegarder"
+				@annuler="campagneEnEdition = null"
+			/>
+		</div>
+	</main>
 </template>
+
+<style scoped>
+.campagnes-page {
+	max-width: 1100px;
+	margin: auto;
+	padding: 1.5rem;
+}
+
+.colonnes {
+	display: grid;
+	grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+	align-items: start;
+	gap: 1.5rem;
+}
+
+@media (max-width: 700px) {
+	.colonnes {
+		grid-template-columns: 1fr;
+	}
+}
+</style>
