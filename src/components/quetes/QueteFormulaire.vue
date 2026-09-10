@@ -3,6 +3,7 @@ import { ref } from "vue";
 
 const props = defineProps({
 	quete: { type: Object, default: null },
+	chapitres: { type: Array, required: true },
 });
 const emit = defineEmits(["sauvegarde", "annuler"]);
 
@@ -15,6 +16,7 @@ const formulaire = ref({
 	motDePasseActivation: props.quete?.motDePasseActivation || "", // facultatif selon le sujet
 	motDePasseResolution: props.quete?.motDePasseResolution || "",
 	recompense: props.quete?.recompense || "",
+	chapitreId: props.quete?.chapitreId || props.chapitres[0]?.id || "",
 });
 const erreur = ref("");
 
@@ -28,12 +30,17 @@ function reinitialiser() {
 		motDePasseActivation: "",
 		motDePasseResolution: "",
 		recompense: "",
+		chapitreId: props.chapitres[0]?.id || "",
 	};
 }
 
 function gererSubmit() {
 	if (!formulaire.value.nom.trim()) {
 		erreur.value = "Le nom ne peut pas être vide.";
+		return;
+	}
+	if (!formulaire.value.chapitreId) {
+		erreur.value = "Une quête doit appartenir à un chapitre.";
 		return;
 	}
 	emit("sauvegarde", {
@@ -45,6 +52,7 @@ function gererSubmit() {
 		motDePasseActivation: formulaire.value.motDePasseActivation.trim(),
 		motDePasseResolution: formulaire.value.motDePasseResolution.trim(),
 		recompense: formulaire.value.recompense.trim(),
+		chapitreId: formulaire.value.chapitreId,
 	});
 	reinitialiser();
 	erreur.value = "";
@@ -55,9 +63,22 @@ function gererSubmit() {
 	<section>
 		<h2>{{ quete ? "Modifier" : "Ajouter" }} une quête</h2>
 		<form @submit.prevent="gererSubmit">
+			<p v-if="chapitres.length === 0" role="alert">
+				Créez d'abord un chapitre : une quête doit lui être rattachée.
+			</p>
+
 			<div>
 				<label for="quete-nom">Nom (obligatoire)</label>
 				<input id="quete-nom" type="text" v-model="formulaire.nom" required />
+			</div>
+
+			<div>
+				<label for="quete-chapitre">Chapitre (obligatoire)</label>
+				<select id="quete-chapitre" v-model="formulaire.chapitreId" :disabled="chapitres.length === 0">
+					<option v-for="chapitre in chapitres" :key="chapitre.id" :value="chapitre.id">
+						{{ chapitre.nom }}
+					</option>
+				</select>
 			</div>
 
 			<div>
@@ -103,10 +124,10 @@ function gererSubmit() {
 			<p v-if="erreur" role="alert">{{ erreur }}</p>
 
 			<div class="actions">
-				<button type="submit">{{ quete ? "Enregistrer" : "Ajouter" }}</button>
-				<button v-if="quete" type="button" class="secondaire" @click="emit('annuler')">
-					Annuler
+				<button type="submit" :disabled="chapitres.length === 0">
+					{{ quete ? "Enregistrer" : "Ajouter" }}
 				</button>
+				<button v-if="quete" type="button" class="secondaire" @click="emit('annuler')">Annuler</button>
 			</div>
 		</form>
 	</section>

@@ -1,75 +1,66 @@
 <script setup>
-import { ref, watch } from "vue";
+import { ref } from "vue";
+import { storeToRefs } from "pinia";
+import useCampagnesStore from "@/stores/campagnes.js";
+import useChapitresStore from "@/stores/chapitres.js";
+import useQuetesStore from "@/stores/quetes.js";
 import CampagneFormulaire from "@/components/campagnes/CampagneFormulaire.vue";
 import CampagneListe from "@/components/campagnes/CampagneListe.vue";
 
-const campagnes = ref([]);
-const campagneEnEdition = ref(null);
-const messageStockage = ref("");
-const cleStockage = "jdr-campagnes";
+const campagnesStore = useCampagnesStore();
+const chapitresStore = useChapitresStore();
+const quetesStore = useQuetesStore();
+const { liste: campagnes, lectureImpossible } = storeToRefs(campagnesStore);
 
-// on ne fait pas confiance direct au localStorage, un vieux format planterait tout le reste
-try {
-	const sauvegarde = JSON.parse(localStorage.getItem(cleStockage) || "[]");
-	const valide =
-		Array.isArray(sauvegarde) &&
-		sauvegarde.every(
-			(campagne) =>
-				campagne &&
-				typeof campagne.id === "string" &&
-				typeof campagne.nom === "string" &&
-				["brouillon", "disponible", "active"].includes(campagne.etat) &&
-				typeof campagne.description === "string" &&
-				typeof campagne.commentaire === "string",
-		);
-	if (!valide) throw new Error("Sauvegarde invalide");
-	campagnes.value = sauvegarde;
-} catch {
-	messageStockage.value =
-		"La liste de campagnes sauvegardée ne peut pas être chargée. Les prochains changements remplaceront cette sauvegarde.";
+const campagneEnEdition = ref(null);
+const messageStockage = ref(
+	lectureImpossible.value
+		? "La liste de campagnes sauvegardée ne peut pas être chargée. Les prochains changements remplaceront cette sauvegarde."
+		: "",
+);
+
+function compterChapitres(campagneId) {
+	return chapitresStore.parCampagne(campagneId).length;
 }
 
 function sauvegarder(campagne) {
 	if (campagneEnEdition.value) {
-		const index = campagnes.value.findIndex(({ id }) => id === campagneEnEdition.value.id);
-		if (index === -1) return;
-		campagnes.value.splice(index, 1, { ...campagne, id: campagneEnEdition.value.id });
+		campagnesStore.modifier(campagneEnEdition.value.id, campagne);
 	} else {
-		campagnes.value.push({ ...campagne, id: crypto.randomUUID() });
+		campagnesStore.ajouter(campagne);
+	}
+	if (!campagnesStore.enregistrer()) {
+		messageStockage.value = "Erreur de sauvegarde.";
 	}
 	campagneEnEdition.value = null;
 }
 
 function modifier(id) {
-	campagneEnEdition.value = campagnes.value.find((campagne) => campagne.id === id);
+	campagneEnEdition.value = campagnesStore.parId(id);
 }
 
 function dupliquer(id) {
-	const campagne = campagnes.value.find((element) => element.id === id);
-	if (!campagne) return;
-	campagnes.value.push({ ...campagne, id: crypto.randomUUID(), nom: `${campagne.nom} (copie)` });
+	campagnesStore.dupliquer(id);
+	campagnesStore.enregistrer();
 }
 
 function supprimer(id) {
-	const index = campagnes.value.findIndex((campagne) => campagne.id === id);
-	if (index === -1 || !confirm(`Supprimer « ${campagnes.value[index].nom} » ?`)) return;
-	campagnes.value.splice(index, 1);
+	const campagne = campagnesStore.parId(id);
+	if (!campagne || !confirm(`Supprimer « ${campagne.nom} » et tous ses chapitres & quêtes ?`)) return;
+
+	// suppression en cascade : les chapitres de la campagne, puis les quêtes de ces chapitres
+	for (const chapitre of chapitresStore.parCampagne(id)) {
+		quetesStore.supprimerParChapitre(chapitre.id);
+	}
+	chapitresStore.supprimerParCampagne(id);
+	campagnesStore.supprimer(id);
+
+	campagnesStore.enregistrer();
+	chapitresStore.enregistrer();
+	quetesStore.enregistrer();
+
 	if (campagneEnEdition.value?.id === id) campagneEnEdition.value = null;
 }
-
-watch(
-	campagnes,
-	(nouvelleValeur) => {
-		try {
-			localStorage.setItem(cleStockage, JSON.stringify(nouvelleValeur));
-			messageStockage.value = "";
-		} catch {
-			messageStockage.value =
-				"Sauvegarde impossible dans ce navigateur. Les changements restent disponibles uniquement pendant cette session.";
-		}
-	},
-	{ deep: true },
-);
 </script>
 
 <template>
@@ -85,6 +76,7 @@ watch(
 				<CampagneListe
 					v-else
 					:campagnes="campagnes"
+					:compter-chapitres="compterChapitres"
 					@modifier="modifier"
 					@dupliquer="dupliquer"
 					@supprimer="supprimer"
