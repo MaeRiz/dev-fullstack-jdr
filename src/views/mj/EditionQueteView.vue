@@ -1,85 +1,59 @@
 <script setup>
-import { ref, watch } from "vue";
+import { ref } from "vue";
+import { storeToRefs } from "pinia";
+import useQuetesStore from "@/stores/quetes.js";
+import useChapitresStore from "@/stores/chapitres.js";
 import QueteFormulaire from "@/components/quetes/QueteFormulaire.vue";
 import QueteListe from "@/components/quetes/QueteListe.vue";
 
-const etatsValides = ["inactive", "active", "terminee", "abandonnee"];
+const quetesStore = useQuetesStore();
+const chapitresStore = useChapitresStore();
+const { liste: quetes, lectureImpossible } = storeToRefs(quetesStore);
+const { liste: chapitres } = storeToRefs(chapitresStore);
 
-// pas encore de lien vers un chapitre/une campagne, ce sera à faire quand ces vues existeront
-const quetes = ref([]);
 const queteEnEdition = ref(null);
-const messageStockage = ref("");
-const cleStockage = "jdr-quetes";
+const messageStockage = ref(
+	lectureImpossible.value
+		? "Impossible de récupérer les quêtes déjà sauvegardées, la sauvegarde a peut-être un format trop ancien."
+		: "",
+);
 
-try {
-	const sauvegarde = JSON.parse(localStorage.getItem(cleStockage) || "[]");
-	const valide =
-		Array.isArray(sauvegarde) &&
-		sauvegarde.every(
-			(quete) =>
-				quete &&
-				typeof quete.id === "string" &&
-				typeof quete.nom === "string" &&
-				etatsValides.includes(quete.etat) &&
-				typeof quete.description === "string" &&
-				typeof quete.lieu === "string" &&
-				typeof quete.commentaire === "string" &&
-				typeof quete.motDePasseActivation === "string" &&
-				typeof quete.motDePasseResolution === "string" &&
-				typeof quete.recompense === "string",
-		);
-	if (!valide) throw new Error("Sauvegarde invalide");
-	quetes.value = sauvegarde;
-} catch {
-	messageStockage.value =
-		"Impossible de récupérer les quêtes déjà sauvegardées, la sauvegarde a peut-être un format trop ancien.";
+function libelleChapitre(chapitreId) {
+	return chapitresStore.parId(chapitreId)?.nom ?? "Chapitre supprimé";
 }
 
 function sauvegarder(quete) {
 	if (queteEnEdition.value) {
-		const index = quetes.value.findIndex((q) => q.id === queteEnEdition.value.id);
-		if (index === -1) return;
-		quetes.value.splice(index, 1, { ...quete, id: queteEnEdition.value.id });
+		quetesStore.modifier(queteEnEdition.value.id, quete);
 	} else {
-		quetes.value.push({ ...quete, id: crypto.randomUUID() });
+		quetesStore.ajouter(quete);
+	}
+	if (!quetesStore.enregistrer()) {
+		messageStockage.value = "Erreur de sauvegarde.";
 	}
 	queteEnEdition.value = null;
 }
 
 function modifier(id) {
-	queteEnEdition.value = quetes.value.find((quete) => quete.id === id);
+	queteEnEdition.value = quetesStore.parId(id);
 }
 
 function dupliquer(id) {
-	const original = quetes.value.find((quete) => quete.id === id);
-	if (!original) return;
-	quetes.value.push({ ...original, id: crypto.randomUUID(), nom: `${original.nom} (copie)` });
+	quetesStore.dupliquer(id);
+	quetesStore.enregistrer();
 }
 
 function supprimer(id) {
-	const index = quetes.value.findIndex((quete) => quete.id === id);
-	if (index === -1) return;
+	const quete = quetesStore.parId(id);
+	if (!quete) return;
 
-	const confirmation = confirm(`Supprimer « ${quetes.value[index].nom} » ?`);
+	const confirmation = confirm(`Supprimer « ${quete.nom} » ?`);
 	if (!confirmation) return;
 
-	quetes.value.splice(index, 1);
+	quetesStore.supprimer(id);
+	quetesStore.enregistrer();
 	if (queteEnEdition.value?.id === id) queteEnEdition.value = null;
 }
-
-watch(
-	quetes,
-	(nouvelleValeur) => {
-		try {
-			localStorage.setItem(cleStockage, JSON.stringify(nouvelleValeur));
-			messageStockage.value = "";
-		} catch {
-			messageStockage.value =
-				"Le navigateur refuse d'enregistrer, tes changements resteront visibles mais seulement pour cette session.";
-		}
-	},
-	{ deep: true },
-);
 </script>
 
 <template>
@@ -95,6 +69,7 @@ watch(
 				<QueteListe
 					v-else
 					:quetes="quetes"
+					:libelle-chapitre="libelleChapitre"
 					@modifier="modifier"
 					@dupliquer="dupliquer"
 					@supprimer="supprimer"
@@ -104,6 +79,7 @@ watch(
 			<QueteFormulaire
 				:key="queteEnEdition ? queteEnEdition.id : 'nouvelle'"
 				:quete="queteEnEdition"
+				:chapitres="chapitres"
 				@sauvegarde="sauvegarder"
 				@annuler="queteEnEdition = null"
 			/>

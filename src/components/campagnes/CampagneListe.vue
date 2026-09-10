@@ -1,5 +1,8 @@
 <script setup>
-defineProps({ campagnes: { type: Array, required: true } });
+defineProps({
+	campagnes: { type: Array, required: true },
+	compterChapitres: { type: Function, default: () => 0 },
+});
 const emit = defineEmits(["modifier", "dupliquer", "supprimer"]);
 </script>
 
@@ -8,6 +11,7 @@ const emit = defineEmits(["modifier", "dupliquer", "supprimer"]);
 		<li v-for="campagne in campagnes" :key="campagne.id">
 			<h2>{{ campagne.nom }}</h2>
 			<p>État : {{ campagne.etat }}</p>
+			<p>{{ compterChapitres(campagne.id) }} chapitre(s)</p>
 			<p class="description">{{ campagne.description || "Aucune description." }}</p>
 			<details v-if="campagne.commentaire">
 				<summary>Commentaire MJ</summary>
