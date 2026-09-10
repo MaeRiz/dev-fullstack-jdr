@@ -1,7 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { utiliserBibliotheque } from '@/services/bibliotheque';
-import { archiverContenu } from '@/services/contenus';
+import useContenusStore from '@/stores/contenus';
 import ContenuFormulaire from '@/components/contenus/ContenuFormulaire.vue';
 import ContenuListe from '@/components/contenus/ContenuListe.vue';
 
@@ -10,53 +9,79 @@ const types = [
   { valeur: 'objet', libelle: 'Objets' },
   { valeur: 'indice', libelle: 'Indices' },
 ];
-const { contenus, erreurBibliotheque: messageStockage, lectureImpossible, enregistrerContenus } = utiliserBibliotheque();
-const typeActif = ref('lieu');
+const store = useContenusStore();
+const messageErreur = ref(store.lectureImpossible ? 'Impossible de charger la bibliothèque. La sauvegarde est conservée.' : '');
+const typeSelectionne = ref('lieu');
 const recherche = ref('');
-const contenuEnEdition = ref(null);
+const contenuSelectionne = ref(null);
 
-const contenusDuType = computed(() => (
-  contenus.value.filter((contenu) => contenu.type === typeActif.value && !contenu.archive)
+const contenusFiltres = computed(() => (
+  typeSelectionne.value === 'lieu' ? store.lieux : typeSelectionne.value === 'objet' ? store.objets : store.indices
 ));
-const contenusVisibles = computed(() => {
+const resultats = computed(() => {
   const texte = recherche.value.trim().toLowerCase();
-  return contenusDuType.value.filter((contenu) => (
+  return contenusFiltres.value.filter((contenu) => (
     contenu.nom.toLowerCase().includes(texte)
     || (contenu.description || contenu.texte || '').toLowerCase().includes(texte)
   ));
 });
 
 function changerType(type) {
-  typeActif.value = type;
+  typeSelectionne.value = type;
   recherche.value = '';
-  contenuEnEdition.value = null;
+  contenuSelectionne.value = null;
+}
+
+function enregistrer() {
+  const succes = store.enregistrer();
+  messageErreur.value = succes ? '' : 'Sauvegarde impossible. Les changements sont en mémoire mais ne sont pas enregistrés dans le navigateur.';
+  return succes;
 }
 
 function sauvegarder(contenu, terminer) {
-  const id = contenuEnEdition.value?.id;
-  const liste = id
-    ? contenus.value.map(element => element.id === id ? { ...contenu, id } : element)
-    : [...contenus.value, { ...contenu, id: crypto.randomUUID() }];
-  if (enregistrerContenus(liste)) {
-    contenuEnEdition.value = null;
-    terminer();
+  try {
+    let id = contenuSelectionne.value?.id;
+    if (id) {
+      store.modifier(id, contenu);
+    } else {
+      id = store.ajouter(contenu);
+    }
+    if (enregistrer()) {
+      contenuSelectionne.value = null;
+      terminer();
+    } else {
+      contenuSelectionne.value = store.parId(id);
+    }
+  } catch (erreur) {
+    messageErreur.value = erreur.message;
   }
 }
 
 function modifier(id) {
-  contenuEnEdition.value = contenus.value.find((contenu) => contenu.id === id);
+  contenuSelectionne.value = store.parId(id);
 }
 
 function dupliquer(id) {
-  const contenu = contenus.value.find((element) => element.id === id);
+  const contenu = store.parId(id);
   if (!contenu) return;
-  enregistrerContenus([...contenus.value, { ...contenu, id: crypto.randomUUID(), nom: `${contenu.nom} (copie)` }]);
+  try {
+    store.ajouter({ ...contenu, nom: `${contenu.nom} (copie)` });
+    enregistrer();
+  } catch (erreur) {
+    messageErreur.value = erreur.message;
+  }
 }
 
 function supprimer(id) {
-  const index = contenus.value.findIndex((contenu) => contenu.id === id);
-  if (index === -1 || !confirm(`Retirer « ${contenus.value[index].nom} » de la bibliothèque ? Les joueurs et chapitres qui l’utilisent le conserveront.`)) return;
-  if (enregistrerContenus(archiverContenu(contenus.value, id)) && contenuEnEdition.value?.id === id) contenuEnEdition.value = null;
+  const contenu = store.parId(id);
+  if (!contenu || !confirm(`Retirer « ${contenu.nom} » de la bibliothèque ? Les joueurs et chapitres qui l’utilisent le conserveront.`)) return;
+  try {
+    store.modifier(id, { archive: true });
+    enregistrer();
+    if (contenuSelectionne.value?.id === id) contenuSelectionne.value = null;
+  } catch (erreur) {
+    messageErreur.value = erreur.message;
+  }
 }
 </script>
 
@@ -64,25 +89,25 @@ function supprimer(id) {
   <main class="bibliotheque">
     <h1>Lieux, objets et indices</h1>
     <p>Préparez les contenus réutilisables de vos campagnes.</p>
-    <p v-if="messageStockage" role="alert">{{ messageStockage }}</p>
+    <p v-if="messageErreur" role="alert">{{ messageErreur }}</p>
     <div class="categories" aria-label="Types de contenus">
       <button v-for="type in types" :key="type.valeur" type="button"
-        :aria-pressed="typeActif === type.valeur" :class="{ actif: typeActif === type.valeur }"
+        :aria-pressed="typeSelectionne === type.valeur" :class="{ actif: typeSelectionne === type.valeur }"
         @click="changerType(type.valeur)">{{ type.libelle }}</button>
     </div>
     <div class="colonnes">
       <section aria-label="Liste des contenus">
         <label for="recherche-contenu">Rechercher par nom, description ou texte</label>
         <input id="recherche-contenu" type="search" v-model="recherche">
-        <p>{{ contenusVisibles.length }} résultat(s)</p>
-        <p v-if="contenusDuType.length === 0">Aucun contenu dans cette catégorie. Utilisez le formulaire pour en ajouter un.</p>
-        <p v-else-if="contenusVisibles.length === 0">Aucun contenu ne correspond à votre recherche.</p>
-        <ContenuListe v-else :contenus="contenusVisibles"
+        <p>{{ resultats.length }} résultat(s)</p>
+        <p v-if="contenusFiltres.length === 0">Aucun contenu dans cette catégorie. Utilisez le formulaire pour en ajouter un.</p>
+        <p v-else-if="resultats.length === 0">Aucun contenu ne correspond à votre recherche.</p>
+        <ContenuListe v-else :contenus="resultats"
           @modifier="modifier" @dupliquer="dupliquer" @supprimer="supprimer" />
       </section>
-      <ContenuFormulaire :key="contenuEnEdition ? contenuEnEdition.id : typeActif"
-        :type="typeActif" :contenu="contenuEnEdition" :desactive="lectureImpossible"
-        @sauvegarde="sauvegarder" @annuler="contenuEnEdition = null" />
+      <ContenuFormulaire :key="contenuSelectionne ? contenuSelectionne.id : typeSelectionne"
+        :type="typeSelectionne" :contenu="contenuSelectionne" :desactive="store.lectureImpossible"
+        @sauvegarde="sauvegarder" @annuler="contenuSelectionne = null" />
     </div>
   </main>
 </template>
