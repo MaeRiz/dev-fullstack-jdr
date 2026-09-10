@@ -83,17 +83,51 @@ watch(
 </script>
 
 <template>
-	<h1>Quêtes</h1>
+	<main class="quetes-page">
+		<h1>Quêtes</h1>
+		<p v-if="messageStockage" role="alert">{{ messageStockage }}</p>
 
-	<p v-if="messageStockage" role="alert">{{ messageStockage }}</p>
+		<div class="colonnes">
+			<section aria-label="Liste des quêtes">
+				<p v-if="quetes.length === 0">
+					Pas encore de quête enregistrée, le formulaire ci-dessous permet d'en créer une.
+				</p>
+				<QueteListe
+					v-else
+					:quetes="quetes"
+					@modifier="modifier"
+					@dupliquer="dupliquer"
+					@supprimer="supprimer"
+				/>
+			</section>
 
-	<p v-if="quetes.length === 0">Pas encore de quête enregistrée, le formulaire ci-dessous permet d'en créer une.</p>
-	<QueteListe v-else :quetes="quetes" @modifier="modifier" @dupliquer="dupliquer" @supprimer="supprimer" />
-
-	<QueteFormulaire
-		:key="queteEnEdition ? queteEnEdition.id : 'nouvelle'"
-		:quete="queteEnEdition"
-		@sauvegarde="sauvegarder"
-		@annuler="queteEnEdition = null"
-	/>
+			<QueteFormulaire
+				:key="queteEnEdition ? queteEnEdition.id : 'nouvelle'"
+				:quete="queteEnEdition"
+				@sauvegarde="sauvegarder"
+				@annuler="queteEnEdition = null"
+			/>
+		</div>
+	</main>
 </template>
+
+<style scoped>
+.quetes-page {
+	max-width: 1100px;
+	margin: auto;
+	padding: 1.5rem;
+}
+
+.colonnes {
+	display: grid;
+	grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+	align-items: start;
+	gap: 1.5rem;
+}
+
+@media (max-width: 700px) {
+	.colonnes {
+		grid-template-columns: 1fr;
+	}
+}
+</style>

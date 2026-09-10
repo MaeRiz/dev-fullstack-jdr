@@ -8,10 +8,10 @@ const emit = defineEmits(["modifier", "dupliquer", "supprimer"]);
 		<li v-for="campagne in campagnes" :key="campagne.id">
 			<h2>{{ campagne.nom }}</h2>
 			<p>État : {{ campagne.etat }}</p>
-			<p>{{ campagne.description || "Aucune description." }}</p>
+			<p class="description">{{ campagne.description || "Aucune description." }}</p>
 			<details v-if="campagne.commentaire">
 				<summary>Commentaire MJ</summary>
-				<p>{{ campagne.commentaire }}</p>
+				<p class="description">{{ campagne.commentaire }}</p>
 			</details>
 			<div class="actions">
 				<button type="button" :aria-label="`Modifier ${campagne.nom}`" @click="emit('modifier', campagne.id)">
@@ -20,7 +20,12 @@ const emit = defineEmits(["modifier", "dupliquer", "supprimer"]);
 				<button type="button" :aria-label="`Dupliquer ${campagne.nom}`" @click="emit('dupliquer', campagne.id)">
 					Dupliquer
 				</button>
-				<button type="button" :aria-label="`Supprimer ${campagne.nom}`" @click="emit('supprimer', campagne.id)">
+				<button
+					type="button"
+					class="supprimer"
+					:aria-label="`Supprimer ${campagne.nom}`"
+					@click="emit('supprimer', campagne.id)"
+				>
 					Supprimer
 				</button>
 			</div>
@@ -30,25 +35,50 @@ const emit = defineEmits(["modifier", "dupliquer", "supprimer"]);
 
 <style scoped>
 ul {
-	list-style: none;
 	padding: 0;
+	list-style: none;
 }
 
 li {
 	margin-bottom: 1rem;
-	padding: 0.75rem;
+	padding: 1rem;
 	border: 1px solid #ddd;
-	border-radius: 4px;
+	border-radius: 6px;
+	overflow-wrap: anywhere;
 }
 
 h2 {
-	margin: 0 0 0.25rem;
-	font-size: 1.1rem;
+	margin-top: 0;
+	font-size: 1.2rem;
+}
+
+.description {
+	white-space: pre-wrap;
+}
+
+summary {
+	cursor: pointer;
 }
 
 .actions {
 	display: flex;
+	flex-wrap: wrap;
 	gap: 0.5rem;
-	margin-top: 0.5rem;
+	margin-top: 1rem;
+}
+
+button {
+	padding: 0.5rem 0.75rem;
+	border: 1px solid #999;
+	border-radius: 4px;
+	background: white;
+	color: #263238;
+	font: inherit;
+	cursor: pointer;
+}
+
+button.supprimer {
+	border-color: #c99393;
+	color: #a02020;
 }
 </style>
