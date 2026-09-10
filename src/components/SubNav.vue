@@ -19,20 +19,30 @@ defineProps({
 .sub-nav {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 0.75rem;
-	padding: 0.5rem 1rem;
+	gap: 0.4rem;
+	padding: 0.6rem 1rem;
 	background: #f3f4f6;
 	border-bottom: 1px solid #ddd;
 }
 
 .sub-nav a {
+	padding: 0.3rem 0.7rem;
+	border-radius: 999px;
 	text-decoration: none;
-	color: inherit;
-	font-size: 0.9rem;
+	color: #263238;
+	font-size: 0.85rem;
+	transition:
+		background-color 0.15s ease,
+		color 0.15s ease;
+}
+
+.sub-nav a:hover {
+	background: white;
 }
 
 .sub-nav a.router-link-exact-active {
-	color: #215ad3;
+	background: #215ad3;
+	color: white;
 	font-weight: 600;
 }
 </style>
