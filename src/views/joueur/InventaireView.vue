@@ -12,7 +12,7 @@ const indices = computed(() => resultats.value.filter(element => element.type ==
   <section aria-labelledby="titre-inventaire">
     <h2 id="titre-inventaire">Mon inventaire</h2>
     <p v-if="!lecture.personnage" class="vide-joueur">Choisis ton personnage pour ouvrir son inventaire.</p>
-    <template v-else>
+    <div v-else>
       <label for="recherche-inventaire">Rechercher un objet ou un indice<input id="recherche-inventaire" v-model="recherche" type="search" placeholder="Nom, description ou texte" /></label>
       <h3>Mes objets</h3>
       <p v-if="!objets.length">{{ recherche ? 'Aucun objet ne correspond à la recherche.' : 'Ton inventaire ne contient aucun objet.' }}</p>
@@ -31,6 +31,6 @@ const indices = computed(() => resultats.value.filter(element => element.type ==
           <details><summary>Lire l’indice</summary><p class="texte-joueur">{{ indice.description || 'Aucun texte.' }}</p></details>
         </article>
       </div>
-    </template>
+    </div>
   </section>
 </template>

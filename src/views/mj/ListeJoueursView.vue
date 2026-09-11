@@ -1,6 +1,7 @@
 <script setup>
 import { computed, nextTick, ref } from 'vue';
-import InventaireJoueur from '@/components/InventaireJoueur.vue';
+import { useRoute } from 'vue-router';
+import JoueurCarte from '@/components/joueurs/JoueurCarte.vue';
 import { modifierInventaire, nomObjet } from '@/services/inventaire';
 import { chargerJoueurs, creerJoueur, modifierJoueur, filtrerJoueurs, dupliquerJoueur, sauvegarderJoueurs } from '@/services/joueurs';
 import useReferencesJeu from '@/composables/useReferencesJeu';
@@ -8,6 +9,7 @@ import { utiliserBibliotheque } from '@/services/bibliotheque';
 
 const { contenus, objetsBibliotheque, erreurBibliotheque, lectureImpossible } = utiliserBibliotheque();
 const { references, erreurReferences } = useReferencesJeu();
+const route = useRoute();
 const nomCampagne = id => id === null ? 'Sans campagne' : references.value.campagnes.find(campagne => campagne.id === id)?.nom ?? 'Campagne indisponible';
 
 const joueurs = ref([]);
@@ -15,7 +17,7 @@ const erreur = ref('');
 const message = ref('');
 const chargementImpossible = ref(false);
 const recherche = ref('');
-const campagneFiltre = ref(undefined);
+const campagneFiltre = ref(route.query.campagneId ?? undefined);
 const formulaire = ref(null);
 const champNom = ref(null);
 const boutonAjouter = ref(null);
@@ -128,7 +130,7 @@ function supprimer(joueur) {
         <h1>Joueurs <span class="compteur">{{ joueurs.length }}</span></h1>
         <p>Crée et gère les personnages de tes parties.</p>
       </div>
-      <button ref="boutonAjouter" type="button" :disabled="chargementImpossible || !!formulaire" @click="ouvrirFormulaire()">Ajouter un joueur</button>
+      <button ref="boutonAjouter" class="btn" type="button" :disabled="chargementImpossible || !!formulaire" @click="ouvrirFormulaire()">Ajouter un joueur</button>
     </header>
 
     <p v-if="erreur" class="erreur" role="alert">{{ erreur }}</p>
@@ -136,49 +138,49 @@ function supprimer(joueur) {
     <p v-if="erreurReferences" class="erreur" role="alert">{{ erreurReferences }}</p>
     <p class="confirmation" role="status">{{ message }}</p>
 
-    <section v-if="formulaire" class="panneau" aria-labelledby="titre-formulaire">
+    <section v-if="formulaire" class="panel panneau" aria-labelledby="titre-formulaire">
       <h2 id="titre-formulaire">{{ formulaire.id ? 'Modifier le joueur' : 'Nouveau joueur' }}</h2>
       <form @submit.prevent="enregistrerFormulaire">
         <div class="champs">
           <label for="nom">Nom du joueur <span>(obligatoire)</span>
-            <input id="nom" ref="champNom" v-model="formulaire.nom" required maxlength="100" @input="champNom.setCustomValidity('')" />
+            <input id="nom" ref="champNom" class="control" v-model="formulaire.nom" required maxlength="100" @input="champNom.setCustomValidity('')" />
           </label>
           <label for="etat">État
-            <select id="etat" v-model="formulaire.etat">
+            <select id="etat" class="control" v-model="formulaire.etat">
               <option value="vivant">Vivant</option>
               <option value="mort">Mort</option>
             </select>
           </label>
         </div>
         <label for="campagne-joueur">Campagne
-          <select id="campagne-joueur" v-model="formulaire.campagneId" aria-describedby="aide-campagnes">
+          <select id="campagne-joueur" class="control" v-model="formulaire.campagneId" aria-describedby="aide-campagnes">
             <option :value="null">Sans campagne</option>
             <option v-for="campagne in campagnesDisponibles" :key="campagne.id" :value="campagne.id">{{ campagne.nom }}</option>
           </select>
         </label>
         <p id="aide-campagnes" class="aide-campagnes">Un transfert conserve l’inventaire et remet le lieu actuel à zéro.</p>
         <label for="description">Description
-          <textarea id="description" v-model="formulaire.description" rows="3" maxlength="5000" />
+          <textarea id="description" class="control" v-model="formulaire.description" rows="3" maxlength="5000" />
         </label>
         <label for="commentaire">Commentaire MJ <span>— réservé à cette interface</span>
-          <textarea id="commentaire" v-model="formulaire.commentaireMj" rows="3" maxlength="5000" />
+          <textarea id="commentaire" class="control" v-model="formulaire.commentaireMj" rows="3" maxlength="5000" />
         </label>
         <div class="actions">
-          <button type="submit">Enregistrer</button>
-          <button type="button" class="secondaire" @click="fermerFormulaire">Annuler</button>
+          <button type="submit" class="btn">Enregistrer</button>
+          <button type="button" class="btn secondary" @click="fermerFormulaire">Annuler</button>
         </div>
       </form>
     </section>
 
     <label for="filtre-campagne" class="recherche">Filtrer par campagne
-      <select id="filtre-campagne" v-model="campagneFiltre" :disabled="!!formulaire" @change="suppressionId = null">
+      <select id="filtre-campagne" class="control" v-model="campagneFiltre" :disabled="!!formulaire" @change="suppressionId = null">
         <option :value="undefined">Toutes les campagnes</option>
         <option :value="null">Sans campagne</option>
         <option v-for="campagne in campagnesDisponibles" :key="campagne.id" :value="campagne.id">{{ campagne.nom }}</option>
       </select>
     </label>
     <label v-if="joueurs.length" for="recherche" class="recherche">Rechercher un joueur
-      <input id="recherche" v-model="recherche" type="search" placeholder="Nom ou description" />
+      <input id="recherche" class="control" v-model="recherche" type="search" placeholder="Nom ou description" />
     </label>
 
     <div v-if="!chargementImpossible && !joueurs.length" class="vide">
@@ -189,67 +191,135 @@ function supprimer(joueur) {
     <p v-if="joueurs.length">{{ joueursFiltres.length }} joueur(s) affiché(s) sur {{ joueurs.length }}.</p>
 
     <div class="liste">
-      <article v-for="joueur in joueursFiltres" :key="joueur.id" class="panneau">
-        <div class="titre-joueur">
-          <h2>{{ joueur.nom }}</h2>
-          <span class="etat" :class="{ mort: joueur.etat === 'mort' }">{{ joueur.etat === 'vivant' ? 'Vivant' : 'Mort' }}</span>
-        </div>
-        <p class="aide-campagnes">Campagne : {{ nomCampagne(joueur.campagneId) }}</p>
-        <p class="texte">{{ joueur.description || 'Aucune description.' }}</p>
-        <details v-if="joueur.commentaireMj">
-          <summary>Commentaire MJ</summary>
-          <p class="texte">{{ joueur.commentaireMj }}</p>
-        </details>
-        <InventaireJoueur :joueur="joueur" :objets="objetsBibliotheque" :contenus="contenus" :desactive="lectureImpossible || !!formulaire || suppressionId === joueur.id"
-          @modifier="(objetId, quantite, action) => changerInventaire(joueur, objetId, quantite, action)" />
-        <div class="actions">
-          <button type="button" class="secondaire" :disabled="!!formulaire" :aria-label="`Modifier ${joueur.nom}`" @click="ouvrirFormulaire(joueur)">Modifier</button>
-          <button type="button" class="secondaire" :disabled="!!formulaire" :aria-label="`Dupliquer ${joueur.nom}`" @click="dupliquer(joueur)">Dupliquer</button>
-          <button type="button" class="danger" :disabled="!!formulaire" :aria-label="`Supprimer ${joueur.nom}`" @click="suppressionId = joueur.id">Supprimer</button>
-        </div>
-        <div v-if="suppressionId === joueur.id" class="suppression" role="group" :aria-label="`Confirmer la suppression de ${joueur.nom}`">
-          <p>Supprimer définitivement « {{ joueur.nom }} » et son inventaire ?</p>
-          <div class="actions">
-            <button type="button" class="danger" @click="supprimer(joueur)">Confirmer la suppression</button>
-            <button type="button" class="secondaire" @click="suppressionId = null">Annuler</button>
-          </div>
-        </div>
-      </article>
+      <JoueurCarte v-for="joueur in joueursFiltres" :key="joueur.id" :joueur="joueur" :nom-campagne="nomCampagne" :objets="objetsBibliotheque" :contenus="contenus" :desactive="lectureImpossible || !!formulaire || suppressionId === joueur.id" :suppression="suppressionId === joueur.id" @modifier="ouvrirFormulaire" @dupliquer="dupliquer" @supprimer="suppressionId = joueur.id" @confirmer-suppression="supprimer" @annuler-suppression="suppressionId = null" @modifier-inventaire="changerInventaire" />
     </div>
   </main>
 </template>
 
 <style scoped>
-.joueurs-page { max-width: 1050px; margin: 0 auto; padding: 2rem 1rem; color: #1f2937; font-family: system-ui, sans-serif; }
-.entete, .titre-joueur { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
-h1 { margin: 0; font-size: 2rem; }
-h2 { margin: 0 0 1rem; font-size: 1.15rem; overflow-wrap: anywhere; }
-.surtitre { color: #536176; font-size: .8rem; margin-top: 0; }
-.compteur { font-size: 1rem; color: #536176; }
-.information, .vide { background: #f3f4f6; padding: 1rem; border-radius: 8px; line-height: 1.6; }
-.confirmation { color: #166534; min-height: 1.5rem; }
-.erreur, .suppression { padding: 1rem; background: #fff1f2; border-radius: 6px; color: #9f1239; }
-.panneau { border: 1px solid #d1d5db; border-radius: 8px; padding: 1.25rem; background: white; min-width: 0; }
-.liste { display: grid; gap: 1rem; margin-top: 1.5rem; }
-.champs { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; }
-label { display: block; margin-bottom: 1rem; font-size: .9rem; font-weight: 600; }
-label span, .inventaire { color: #536176; font-size: .85rem; font-weight: 400; }
-input, select, textarea { display: block; box-sizing: border-box; width: 100%; margin-top: .5rem; padding: .7rem; border: 1px solid #9ca3af; border-radius: 5px; font: inherit; color: inherit; background: white; }
-textarea { resize: vertical; }
-.recherche { margin-top: 1.5rem; max-width: 440px; }
-.aide-campagnes { color: #536176; font-size: .85rem; overflow-wrap: anywhere; }
-.actions { display: flex; gap: .65rem; flex-wrap: wrap; }
-button { border: 1px solid transparent; border-radius: 5px; padding: .65rem 1rem; background: #215ad3; color: white; font: inherit; font-size: .9rem; cursor: pointer; }
-button.secondaire { background: white; border-color: #9ca3af; color: #1f2937; }
-button.danger { background: white; border-color: #be123c; color: #be123c; }
-button:hover:not(:disabled) { filter: brightness(.92); }
-button:disabled { opacity: .5; cursor: not-allowed; }
-:is(button, input, textarea, select, summary):focus-visible { outline: 3px solid #215ad3; outline-offset: 3px; }
-.etat { border-radius: 20px; padding: .3rem .7rem; background: #dcfce7; color: #166534; font-size: .8rem; }
-.etat.mort { background: #f3f4f6; color: #4b5563; }
-.titre-joueur h2 { margin: 0; }
-.texte { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
-summary { cursor: pointer; font-size: .9rem; }
-.suppression { margin-top: 1rem; }
-@media (max-width: 540px) { .champs { grid-template-columns: 1fr; gap: 0; } .joueurs-page { padding: 1rem .5rem; } }
+.joueurs-page {
+	max-width: 1050px;
+	margin: 0 auto;
+	padding: 2rem 1rem;
+	color: var(--texte);
+	font-family: system-ui, sans-serif;
+}
+.entete, .titre-joueur {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+h1 {
+	margin: 0;
+	font-size: 2rem;
+}
+h2 {
+	margin: 0 0 1rem;
+	font-size: 1.15rem;
+	overflow-wrap: anywhere;
+}
+.surtitre {
+	color: var(--texte-secondaire);
+	font-size: .8rem;
+	margin-top: 0;
+}
+.compteur {
+	font-size: 1rem;
+	color: var(--texte-secondaire);
+}
+.information, .vide {
+	background: var(--fond-surface);
+	padding: 1rem;
+	border-radius: 8px;
+	line-height: 1.6;
+}
+.confirmation {
+	color: #8ee0ad;
+	min-height: 1.5rem;
+}
+.erreur {
+	padding: 1rem;
+	background: #422238;
+	border-radius: 6px;
+	color: #ffb4c5;
+}
+.liste {
+	display: grid;
+	gap: 1rem;
+	margin-top: 1.5rem;
+}
+.champs {
+	display: grid;
+	grid-template-columns: 2fr 1fr;
+	gap: 1rem;
+}
+label {
+	display: block;
+	margin-bottom: 1rem;
+	font-size: .9rem;
+	font-weight: 600;
+}
+label span, .inventaire {
+	color: var(--texte-secondaire);
+	font-size: .85rem;
+	font-weight: 400;
+}
+.recherche {
+	margin-top: 1.5rem;
+	max-width: 440px;
+}
+.aide-campagnes {
+	color: var(--texte-secondaire);
+	font-size: .85rem;
+	overflow-wrap: anywhere;
+}
+button:disabled {
+	opacity: .5;
+	cursor: not-allowed;
+}
+button:disabled {
+	opacity: .5;
+	cursor: not-allowed;
+}
+:is(button, input, textarea, select, summary):focus-visible {
+	outline: 3px solid var(--violet-clair);
+	outline-offset: 3px;
+}
+.etat {
+	border-radius: 20px;
+	padding: .3rem .7rem;
+	background: #203e36;
+	color: #8ee0ad;
+	font-size: .8rem;
+}
+.etat.mort {
+	background: var(--fond-surface);
+	color: var(--texte-secondaire);
+}
+.titre-joueur h2 {
+	margin: 0;
+}
+.texte {
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	line-height: 1.6;
+}
+summary {
+	cursor: pointer;
+	font-size: .9rem;
+}
+.suppression {
+	margin-top: 1rem;
+}
+@media (max-width: 540px) {
+	.champs {
+		grid-template-columns: 1fr;
+		gap: 0;
+	}
+	.joueurs-page {
+		padding: 1rem .5rem;
+	}
+}
 </style>

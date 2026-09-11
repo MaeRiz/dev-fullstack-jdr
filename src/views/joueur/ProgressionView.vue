@@ -29,7 +29,7 @@ const progression = computed(() => {
       <article v-for="chapitre in progression" :key="chapitre.id" class="carte-joueur">
         <span class="etat-joueur">{{ etats[chapitre.etat] }}</span><h3>{{ chapitre.nom }}</h3>
         <details><summary>Détails du chapitre</summary><p class="texte-joueur">{{ chapitre.description || 'Aucune description.' }}</p>
-          <template v-if="chapitre.recompenses.length"><p>Récompenses distribuées :</p><ul><li v-for="(recompense, index) in chapitre.recompenses" :key="index">{{ recompense }}</li></ul></template>
+          <div v-if="chapitre.recompenses.length"><p>Récompenses distribuées :</p><ul><li v-for="(recompense, index) in chapitre.recompenses" :key="index">{{ recompense }}</li></ul></div>
         </details>
         <h4>Quêtes</h4>
         <p v-if="!chapitre.quetes.length">Aucune quête visible pour ces filtres.</p>
@@ -37,7 +37,7 @@ const progression = computed(() => {
           <li v-for="quete in chapitre.quetes" :key="quete.id">
             <details><summary>{{ quete.nom }} — {{ etats[quete.etat] }}</summary>
               <p class="texte-joueur">{{ quete.description || 'Aucune description.' }}</p><p>Lieu : {{ quete.lieu }}</p>
-              <template v-if="quete.recompenses.length"><p>Récompenses distribuées :</p><ul><li v-for="(recompense, index) in quete.recompenses" :key="index">{{ recompense }}</li></ul></template>
+              <div v-if="quete.recompenses.length"><p>Récompenses distribuées :</p><ul><li v-for="(recompense, index) in quete.recompenses" :key="index">{{ recompense }}</li></ul></div>
             </details>
           </li>
         </ol>
