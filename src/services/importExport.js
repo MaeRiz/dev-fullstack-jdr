@@ -14,13 +14,23 @@ function sansId(element) {
   return champs;
 }
 
-function idContenus(chapitres, joueurs, indices) {
+function idContenus(chapitres, quetes, joueurs, indices, catalogue) {
   const ids = new Set(indices);
 
   chapitres.forEach((chapitre) => {
     chapitre.objetsRequis?.forEach(id => ids.add(id));
     chapitre.recompensesObjets?.forEach(({ objetId }) => ids.add(objetId));
     chapitre.recompensesIndices?.forEach(id => ids.add(id));
+  });
+
+  quetes.forEach((quete) => {
+    if (quete.lieuId) ids.add(quete.lieuId);
+    else {
+      const lieu = catalogue.find((contenu) => contenu.type === 'lieu' && (contenu.id === quete.lieu || contenu.nom === quete.lieu));
+      if (lieu) ids.add(lieu.id);
+    }
+    quete.recompensesObjets?.forEach(({ objetId }) => ids.add(objetId));
+    quete.recompensesIndices?.forEach((id) => ids.add(id));
   });
 
   joueurs.forEach((joueur) => {
@@ -57,7 +67,7 @@ export function exporterCampagne(campagneId) {
   const idsChapitres = new Set(chapitresCampagne.map(chapitre => chapitre.id));
   const quetesCampagne = quetes.liste.filter(quete => idsChapitres.has(quete.chapitreId));
   const indices = partie.indicesDeCampagne(campagneId);
-  const ids = idContenus(chapitresCampagne, joueursCampagne, indices);
+  const ids = idContenus(chapitresCampagne, quetesCampagne, joueursCampagne, indices, contenus.liste);
   const contenusCampagne = contenus.liste.filter(contenu => ids.has(contenu.id));
 
   return copier({
@@ -95,6 +105,7 @@ export function importerCampagne(donnees) {
   const idCampagne = campagnes.ajouter(sansId(donnees.campagne));
   const correspondancesContenus = new Map();
   const correspondancesChapitres = new Map();
+  const correspondancesQuetes = new Map();
 
   (donnees.contenus ?? []).forEach((contenu) => {
     const nouvelId = contenus.ajouter(sansId(contenu));
@@ -102,10 +113,6 @@ export function importerCampagne(donnees) {
   });
 
   (donnees.chapitres ?? []).forEach((chapitre) => {
-    const quetesChapitre = (chapitre.quetes ?? []).map(quete => ({
-      ...quete,
-      id: crypto.randomUUID(),
-    }));
     const nouvelId = chapitres.ajouter({
       ...sansId(chapitre),
       campagneId: idCampagne,
@@ -115,16 +122,35 @@ export function importerCampagne(donnees) {
         quantite,
       })),
       recompensesIndices: (chapitre.recompensesIndices ?? []).map(id => remplacerId(id, correspondancesContenus)),
-      quetes: quetesChapitre,
+      quetes: [],
     });
     correspondancesChapitres.set(chapitre.id, nouvelId);
   });
 
   (donnees.quetes ?? []).forEach((quete) => {
-    quetes.ajouter({
+    const nouvelId = quetes.ajouter({
       ...sansId(quete),
       chapitreId: remplacerId(quete.chapitreId, correspondancesChapitres),
+      lieuId: remplacerId(quete.lieuId, correspondancesContenus),
+      recompensesObjets: (quete.recompensesObjets ?? []).map(({ objetId, quantite }) => ({
+        objetId: remplacerId(objetId, correspondancesContenus),
+        quantite,
+      })),
+      recompensesIndices: (quete.recompensesIndices ?? []).map(id => remplacerId(id, correspondancesContenus)),
     });
+    correspondancesQuetes.set(quete.id, nouvelId);
+  });
+
+  (donnees.chapitres ?? []).forEach((chapitre) => {
+    const nouvelId = correspondancesChapitres.get(chapitre.id);
+    const references = (chapitre.quetes ?? [])
+      .map((reference) => ({
+        id: correspondancesQuetes.get(reference.id),
+        modeleId: reference.modeleId ?? reference.id,
+        nom: reference.nom,
+      }))
+      .filter((reference) => reference.id);
+    chapitres.modifier(nouvelId, { quetes: references });
   });
 
   (donnees.joueurs ?? []).forEach((joueur) => {
