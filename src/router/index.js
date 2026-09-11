@@ -4,7 +4,6 @@ import InventaireView from "@/views/joueur/InventaireView.vue";
 import JoueurLayout from "@/layout/JoueurLayout.vue";
 import ProgressionView from "@/views/joueur/ProgressionView.vue";
 import BibliothequeContenusView from "@/views/mj/BibliothequeContenusView.vue";
-import CampagneActiveView from "@/views/mj/CampagneActiveView.vue";
 import EditionCampagneView from "@/views/mj/EditionCampagneView.vue";
 import EditionChapitreView from "@/views/mj/EditionChapitreView.vue";
 import EditionQueteView from "@/views/mj/EditionQueteView.vue";
@@ -56,11 +55,6 @@ const routes = [
 				path: "contenus",
 				name: "mj-bibliotheque-contenus",
 				component: BibliothequeContenusView,
-			},
-			{
-				path: "actif",
-				name: "mj-campagne-active",
-				component: CampagneActiveView,
 			},
 		],
 	},
