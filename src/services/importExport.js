@@ -108,7 +108,10 @@ export function importerCampagne(donnees) {
   const correspondancesQuetes = new Map();
 
   (donnees.contenus ?? []).forEach((contenu) => {
-    const nouvelId = contenus.ajouter(sansId(contenu));
+    const contenuExistant = contenus.parId(contenu.id);
+    const nouvelId = contenuExistant?.type === contenu.type
+      ? contenuExistant.id
+      : contenus.ajouter(sansId(contenu));
     correspondancesContenus.set(contenu.id, nouvelId);
   });
 
@@ -146,7 +149,7 @@ export function importerCampagne(donnees) {
     const references = (chapitre.quetes ?? [])
       .map((reference) => ({
         id: correspondancesQuetes.get(reference.id),
-        modeleId: reference.modeleId ?? reference.id,
+        modeleId: correspondancesQuetes.get(reference.modeleId ?? reference.id) ?? reference.modeleId ?? reference.id,
         nom: reference.nom,
       }))
       .filter((reference) => reference.id);
