@@ -6,6 +6,7 @@ import useChapitresStore from "@/stores/chapitres.js";
 import useQuetesStore from "@/stores/quetes.js";
 import CampagneFormulaire from "@/components/campagnes/CampagneFormulaire.vue";
 import CampagneListe from "@/components/campagnes/CampagneListe.vue";
+import { convertirExport, importerCampagne, lireImport } from "@/services/importExport.js";
 
 const campagnesStore = useCampagnesStore();
 const chapitresStore = useChapitresStore();
@@ -13,6 +14,7 @@ const quetesStore = useQuetesStore();
 const { liste: campagnes, lectureImpossible } = storeToRefs(campagnesStore);
 
 const campagneEnEdition = ref(null);
+const fichierImport = ref(null);
 const messageStockage = ref(
 	lectureImpossible.value
 		? "La liste de campagnes sauvegardée ne peut pas être chargée. Les prochains changements remplaceront cette sauvegarde."
@@ -61,12 +63,49 @@ function supprimer(id) {
 
 	if (campagneEnEdition.value?.id === id) campagneEnEdition.value = null;
 }
+
+function exporterCampagne(id) {
+	try {
+		const campagne = campagnesStore.parId(id);
+		const fichier = new Blob([convertirExport(id)], { type: "application/json" });
+		const lien = document.createElement("a");
+		lien.href = URL.createObjectURL(fichier);
+		lien.download = `${campagne.nom}.cplc.json`;
+		lien.click();
+		URL.revokeObjectURL(lien.href);
+	} catch (erreur) {
+		messageStockage.value = erreur.message;
+	}
+}
+
+function ouvrirImport() {
+	fichierImport.value?.click();
+}
+
+async function importerCampagneFichier({ target }) {
+	const fichier = target.files[0];
+	if (!fichier) return;
+
+	try {
+		const donnees = lireImport(await fichier.text());
+		const id = importerCampagne(donnees);
+		messageStockage.value = `Campagne importée : ${campagnesStore.parId(id).nom}.`;
+	} catch (erreur) {
+		messageStockage.value = erreur.message;
+	} finally {
+		target.value = "";
+	}
+}
 </script>
 
 <template>
 	<main class="campagnes-page">
 		<h1>Fiche campagne</h1>
 		<p v-if="messageStockage" role="alert">{{ messageStockage }}</p>
+		<div class="import">
+			<input ref="fichierImport" hidden type="file" accept=".cplc.json,application/json" @change="importerCampagneFichier" />
+			<button type="button" @click="ouvrirImport">Importer une campagne</button>
+		</div>
 
 		<div class="colonnes">
 			<section aria-label="Liste des campagnes">
@@ -79,6 +118,7 @@ function supprimer(id) {
 					:compter-chapitres="compterChapitres"
 					@modifier="modifier"
 					@dupliquer="dupliquer"
+					@exporter="exporterCampagne"
 					@supprimer="supprimer"
 				/>
 			</section>
@@ -105,6 +145,11 @@ function supprimer(id) {
 	grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
 	align-items: start;
 	gap: 1.5rem;
+}
+
+.import {
+	display: block;
+	margin: 1rem 0;
 }
 
 @media (max-width: 700px) {

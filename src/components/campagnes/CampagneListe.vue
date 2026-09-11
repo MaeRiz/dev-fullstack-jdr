@@ -3,7 +3,7 @@ defineProps({
 	campagnes: { type: Array, required: true },
 	compterChapitres: { type: Function, default: () => 0 },
 });
-const emit = defineEmits(["modifier", "dupliquer", "supprimer"]);
+const emit = defineEmits(["modifier", "dupliquer", "supprimer", "exporter"]);
 </script>
 
 <template>
@@ -23,6 +23,9 @@ const emit = defineEmits(["modifier", "dupliquer", "supprimer"]);
 				</button>
 				<button type="button" :aria-label="`Dupliquer ${campagne.nom}`" @click="emit('dupliquer', campagne.id)">
 					Dupliquer
+				</button>
+				<button type="button" :aria-label="`Exporter ${campagne.nom}`" @click="emit('exporter', campagne.id)">
+					Exporter
 				</button>
 				<button
 					type="button"
