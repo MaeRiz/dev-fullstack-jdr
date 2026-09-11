@@ -12,54 +12,32 @@ const emit = defineEmits(['modifier', 'dupliquer', 'supprimer']);
     <p class="description">{{ contenu.commentaire }}</p>
   </details>
   <div class="actions">
-    <button type="button" :aria-label="`Modifier ${contenu.nom}`" @click="emit('modifier', contenu.id)">Modifier</button>
-    <button type="button" :aria-label="`Dupliquer ${contenu.nom}`" @click="emit('dupliquer', contenu.id)">Dupliquer</button>
-    <button type="button" class="supprimer" :aria-label="`Supprimer ${contenu.nom}`" @click="emit('supprimer', contenu.id)">Supprimer</button>
+    <button type="button" class="btn secondary" :aria-label="`Modifier ${contenu.nom}`" @click="emit('modifier', contenu.id)">Modifier</button>
+    <button type="button" class="btn secondary" :aria-label="`Dupliquer ${contenu.nom}`" @click="emit('dupliquer', contenu.id)">Dupliquer</button>
+    <button type="button" class="btn supprimer" :aria-label="`Supprimer ${contenu.nom}`" @click="emit('supprimer', contenu.id)">Supprimer</button>
   </div>
   </li>
 </template>
 
 <style scoped>
 li {
-  margin-bottom: 1rem;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  overflow-wrap: anywhere;
+	margin-bottom: 1rem;
+	padding: 1rem;
+	border: 1px solid var(--bordure);
+	border-radius: 6px;
+	overflow-wrap: anywhere;
 }
-
 h2 {
-  margin-top: 0;
-  font-size: 1.2rem;
+	margin-top: 0;
+	font-size: 1.2rem;
 }
-
 .description {
-  white-space: pre-wrap;
+	white-space: pre-wrap;
 }
-
 summary {
-  cursor: pointer;
+	cursor: pointer;
 }
-
 .actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-button {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #999;
-  border-radius: 4px;
-  background: white;
-  color: #263238;
-  font: inherit;
-  cursor: pointer;
-}
-
-button.supprimer {
-  border-color: #c99393;
-  color: #a02020;
+	margin-top: 1rem;
 }
 </style>

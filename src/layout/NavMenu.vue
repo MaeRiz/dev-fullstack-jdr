@@ -12,27 +12,22 @@ nav {
 	display: flex;
 	gap: 0.5rem;
 	padding: 0.75rem 1rem;
-	background: white;
-	border-bottom: 1px solid #ddd;
+	background: #110e1a;
+	border-bottom: 1px solid #352c4c;
 }
-
 nav a {
 	padding: 0.4rem 0.9rem;
 	border-radius: 999px;
 	text-decoration: none;
-	color: #263238;
+	color: #d8d0ed;
 	font-weight: 600;
-	transition:
-		background-color 0.15s ease,
-		color 0.15s ease;
+	transition: background-color 0.15s ease, color 0.15s ease;
 }
-
 nav a:hover {
-	background: #f3f4f6;
+	background: #2d2542;
 }
-
 nav a.router-link-active {
-	background: #215ad3;
+	background: var(--violet);
 	color: white;
 }
 </style>

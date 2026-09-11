@@ -17,7 +17,7 @@ const emit = defineEmits(['modifier', 'dupliquer', 'supprimer']);
 
 <style scoped>
 .contenus {
-  padding: 0;
-  list-style: none;
+	padding: 0;
+	list-style: none;
 }
 </style>

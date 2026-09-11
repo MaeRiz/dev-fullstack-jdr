@@ -11,7 +11,7 @@ watch(() => lecture.lieuActuel?.id, id => { destination.value = lecture.lieux.so
   <section aria-labelledby="titre-actions">
     <h2 id="titre-actions">Mes actions</h2>
     <p v-if="!lecture.personnage" class="vide-joueur">Choisis ton personnage pour agir dans la campagne.</p>
-    <template v-else>
+    <div v-else>
       <article class="carte-joueur">
         <h3>Se déplacer</h3>
         <p>Lieu actuel : {{ lecture.lieuActuel?.nom ?? 'Aucun' }}</p>
@@ -29,6 +29,6 @@ watch(() => lecture.lieuActuel?.id, id => { destination.value = lecture.lieux.so
       <h2>Quêtes dans mon lieu</h2>
       <p v-if="!lecture.actionsQuetes.length">Aucune quête disponible ici dans un chapitre actif.</p>
       <div class="grille-joueur"><ActionJoueur v-for="action in lecture.actionsQuetes" :key="`${action.type}-${action.id}`" :action="action" /></div>
-    </template>
+    </div>
   </section>
 </template>

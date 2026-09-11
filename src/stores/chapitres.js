@@ -40,8 +40,36 @@ const useChapitresStore = defineStore("chapitres", () => {
 		liste.value.splice(index, 1);
 	}
 
+	function dupliquer(id) {
+		if (lectureImpossible.value) throw new Error("Chargement impossible : les données sont conservées.");
+		const original = liste.value.find((chapitre) => chapitre.id === id);
+		if (!original) throw new Error("Élément introuvable.");
+		const copie = {
+			...JSON.parse(JSON.stringify(original)),
+			id: crypto.randomUUID(),
+			nom: `${original.nom} (copie)`,
+			quetes: (original.quetes ?? []).map((quete) => ({ ...quete, id: crypto.randomUUID() })),
+			recompensesDistribuees: false,
+		};
+		liste.value.push(copie);
+		return copie.id;
+	}
+
 	function supprimerParCampagne(campagneId) {
 		liste.value = liste.value.filter((chapitre) => chapitre.campagneId !== campagneId);
+	}
+
+	function deplacer(campagneId, chapitreId, direction) {
+		if (lectureImpossible.value) throw new Error("Chargement impossible : les données sont conservées.");
+		const positions = liste.value
+			.map((chapitre, index) => chapitre.campagneId === campagneId ? index : null)
+			.filter((index) => index !== null);
+		const position = positions.indexOf(liste.value.findIndex((chapitre) => chapitre.id === chapitreId));
+		const cible = position + direction;
+		if (![-1, 1].includes(direction) || position < 0 || cible < 0 || cible >= positions.length) return;
+		const index = positions[position];
+		const indexCible = positions[cible];
+		[liste.value[index], liste.value[indexCible]] = [liste.value[indexCible], liste.value[index]];
 	}
 
 	return {
@@ -51,7 +79,9 @@ const useChapitresStore = defineStore("chapitres", () => {
 		ajouter,
 		modifier,
 		supprimer,
+		dupliquer,
 		supprimerParCampagne,
+		deplacer,
 		lectureImpossible,
 		enregistrer,
 	};

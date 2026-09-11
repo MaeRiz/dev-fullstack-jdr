@@ -1,5 +1,6 @@
 <script setup>
-import { computed, nextTick, ref } from "vue";
+import { computed, nextTick, onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import useCampagnesStore from "@/stores/campagnes.js";
 import useChapitresStore from "@/stores/chapitres.js";
@@ -10,8 +11,12 @@ import { choixContenus } from "@/services/contenus";
 import { formulaireVide, creerChapitre, modifierChapitre, dupliquerChapitre, deplacerQuete } from "@/services/chapitres";
 import { chargerEtatJeu, enregistrerEtatJeu } from "@/services/lectureJoueur";
 import { sansPersistance } from "@/composables/useLocaleStorage";
+import QueteListe from "@/components/quetes/QueteListe.vue";
+import ChapitreDetailCarte from "@/components/chapitres/ChapitreDetailCarte.vue";
 
 const campagnesStore = useCampagnesStore();
+const route = useRoute();
+const router = useRouter();
 const chapitresStore = useChapitresStore();
 const quetesStore = useQuetesStore();
 const { liste: campagnesListe } = storeToRefs(campagnesStore);
@@ -36,10 +41,17 @@ const suppressionId = ref(null);
 const erreur = ref("");
 const message = ref("");
 const recherche = ref("");
-const campagneFiltre = ref(undefined);
+const campagneFiltre = ref(route.query.campagneId ?? undefined);
 const champNom = ref(null);
 const boutonAjouter = ref(null);
 const etats = { inactif: "Inactif", actif: "Actif", termine: "Terminé" };
+
+onMounted(() => {
+	if (route.query.chapitreId) {
+		const chapitre = chapitresStore.parId(route.query.chapitreId);
+		if (chapitre) ouvrir(chapitre);
+	}
+});
 
 const campagnesDisponibles = computed(() => {
 	const liste = [...campagnesListe.value];
@@ -64,6 +76,7 @@ const listeFiltree = computed(() =>
 				.includes(recherche.value.trim().toLocaleLowerCase("fr")),
 	),
 );
+const quetesEdition = computed(() => editionId.value ? quetesStore.parChapitre(editionId.value) : []);
 
 async function ouvrir(chapitre = null) {
 	editionId.value = chapitre?.id ?? null;
@@ -151,14 +164,38 @@ function choisirRecompense(objetId, selectionne) {
 			(objet) => objet.objetId !== objetId,
 		);
 }
+
+function ouvrirQuete(id = null) {
+	const query = { campagneId: formulaire.value?.campagneId, chapitreId: editionId.value };
+	if (id) query.queteId = id;
+	router.push({ name: "mj-edition-quete", query });
+}
+
+function dupliquerQuete(id) {
+	quetesStore.dupliquer(id);
+	quetesStore.enregistrer();
+}
+
+function supprimerQuete(id) {
+	const quete = quetesStore.parId(id);
+	if (!quete || !confirm(`Supprimer « ${quete.nom} » ?`)) return;
+	quetesStore.supprimer(id);
+	quetesStore.enregistrer();
+}
+
+function reordonnerQuete(id, direction) {
+	if (!formulaire.value) return;
+	formulaire.value.quetes = deplacerQuete(formulaire.value.quetes, id, direction);
+}
 </script>
 
 <template>
 	<main class="chapitres-page">
+		<p v-if="route.query.campagneId"><RouterLink :to="{ name: 'mj-gestion-campagne', params: { campagneId: route.query.campagneId } }">← Retour à la campagne</RouterLink></p>
 		<header class="entete">
 			<div>
 				<h1>
-					Chapitres <span class="compteur">{{ chapitres.length }}</span>
+					{{ campagneFiltre !== undefined ? `Chapitres de ${libelle(campagnesListe, campagneFiltre)}` : "Chapitres" }} <span class="compteur">{{ listeFiltree.length }}</span>
 				</h1>
 				<p>Prépare les étapes de tes campagnes et leurs quêtes.</p>
 			</div>
@@ -298,19 +335,9 @@ function choisirRecompense(objetId, selectionne) {
 				<fieldset v-if="editionId">
 					<legend>Quêtes du chapitre</legend>
 					<p class="aide">
-						Les quêtes se créent et se rattachent à ce chapitre depuis la page
-						<RouterLink :to="{ name: 'mj-edition-quete' }">Quêtes</RouterLink>.
+						<RouterLink :to="{ name: 'mj-edition-quete', query: { chapitreId: editionId } }">Créer une quête pour ce chapitre</RouterLink>.
 					</p>
-					<p v-if="!formulaire.quetes.length">Aucune quête associée.</p>
-					<ol v-else class="quetes">
-						<li v-for="(quete, index) in formulaire.quetes" :key="quete.id">
-							<span>{{ quete.nom }}</span>
-							<div class="actions">
-								<button type="button" class="secondaire" :disabled="index === 0" :aria-label="`Monter ${quete.nom}`" @click="formulaire.quetes = deplacerQuete(formulaire.quetes, quete.id, -1)">Monter</button>
-								<button type="button" class="secondaire" :disabled="index === formulaire.quetes.length - 1" :aria-label="`Descendre ${quete.nom}`" @click="formulaire.quetes = deplacerQuete(formulaire.quetes, quete.id, 1)">Descendre</button>
-							</div>
-						</li>
-					</ol>
+					<p>{{ quetesEdition.length }} quête(s) associée(s). La liste complète se trouve sous le formulaire.</p>
 				</fieldset>
 				<div class="actions">
 					<button type="submit">Enregistrer</button
@@ -319,7 +346,16 @@ function choisirRecompense(objetId, selectionne) {
 			</form>
 		</section>
 
-		<div class="champs filtres">
+		<section v-if="editionId" class="quetes-section" aria-labelledby="titre-quetes">
+			<header class="entete">
+				<div><h2 id="titre-quetes">Quêtes du chapitre</h2><p>Crée, modifie ou réorganise les quêtes de ce chapitre.</p></div>
+				<button type="button" @click="ouvrirQuete()">Nouvelle quête</button>
+			</header>
+			<p v-if="!quetesEdition.length" class="vide">Aucune quête associée à ce chapitre.</p>
+			<QueteListe v-else :quetes="quetesEdition" :ordre="formulaire.quetes" :libelle-chapitre="() => formulaire?.nom || ''" @modifier="ouvrirQuete" @dupliquer="dupliquerQuete" @supprimer="supprimerQuete" @deplacer="reordonnerQuete" />
+		</section>
+
+		<div v-if="!editionId" class="champs filtres">
 			<label for="filtre-campagne"
 				>Filtrer par campagne<select
 					id="filtre-campagne"
@@ -342,99 +378,14 @@ function choisirRecompense(objetId, selectionne) {
 					placeholder="Nom ou description"
 			/></label>
 		</div>
-		<div v-if="!bloque && !chapitres.length" class="vide">
+		<div v-if="!editionId && !bloque && !chapitres.length" class="vide">
 			<h2>Aucun chapitre pour le moment</h2>
 			<p>Ajoute ton premier chapitre pour préparer ta campagne.</p>
 		</div>
-		<p v-else-if="!bloque && !listeFiltree.length">Aucun chapitre ne correspond à ces filtres.</p>
-		<p v-if="chapitres.length">{{ listeFiltree.length }} chapitre(s) affiché(s) sur {{ chapitres.length }}.</p>
-		<div class="liste">
-			<article v-for="chapitre in listeFiltree" :key="chapitre.id" class="panneau">
-				<div class="entete">
-					<h2>{{ chapitre.nom }}</h2>
-					<span class="etat" :class="chapitre.etat">{{ etats[chapitre.etat] }}</span>
-				</div>
-				<p class="aide">
-					{{ chapitre.campagneId === null ? "Sans campagne" : libelle(campagnesListe, chapitre.campagneId) }}
-				</p>
-				<p class="texte">{{ chapitre.description || "Aucune description." }}</p>
-				<details>
-					<summary>Détails du chapitre et informations MJ</summary>
-					<p class="texte"><strong>Commentaire MJ :</strong> {{ chapitre.commentaireMj || "Aucun." }}</p>
-					<p class="texte">
-						<strong>Mot de passe d’activation :</strong>
-						{{ chapitre.motDePasseActivation || "Non configuré" }}
-					</p>
-					<p>
-						<strong>Objets requis :</strong>
-						{{ chapitre.objetsRequis.map((id) => libelle(objets, id)).join(", ") || "Aucun" }}
-					</p>
-					<p class="texte">
-						<strong>Mot de passe de résolution :</strong>
-						{{ chapitre.motDePasseResolution || "Non configuré" }}
-					</p>
-					<p>
-						<strong>Objets récompenses :</strong>
-						{{
-							chapitre.recompensesObjets
-								.map((objet) => `${libelle(objets, objet.objetId)} × ${objet.quantite}`)
-								.join(", ") || "Aucun"
-						}}
-					</p>
-					<p>
-						<strong>Indices récompenses :</strong>
-						{{ chapitre.recompensesIndices.map((id) => libelle(indices, id)).join(", ") || "Aucun" }}
-					</p>
-				</details>
-				<h3>Quêtes associées ({{ quetesDuChapitre(chapitre.id).length }})</h3>
-				<ol v-if="quetesDuChapitre(chapitre.id).length">
-					<li v-for="quete in quetesDuChapitre(chapitre.id)" :key="quete.id">
-						{{ quete.nom }} — {{ quete.etat }}
-					</li>
-				</ol>
-				<p v-else>Aucune quête associée.</p>
-				<div class="actions">
-					<button
-						class="secondaire"
-						:disabled="!!formulaire"
-						:aria-label="`Modifier ${chapitre.nom}`"
-						@click="ouvrir(chapitre)"
-					>
-						Modifier
-					</button>
-					<button
-						class="secondaire"
-						:disabled="!!formulaire"
-						:aria-label="`Dupliquer ${chapitre.nom}`"
-						@click="dupliquer(chapitre)"
-					>
-						Dupliquer
-					</button>
-					<button
-						class="danger"
-						:disabled="!!formulaire"
-						:aria-label="`Supprimer ${chapitre.nom}`"
-						@click="suppressionId = chapitre.id"
-					>
-						Supprimer
-					</button>
-				</div>
-				<div
-					v-if="suppressionId === chapitre.id"
-					class="suppression"
-					role="group"
-					:aria-label="`Confirmer la suppression de ${chapitre.nom}`"
-				>
-					<p>
-						Supprimer définitivement « {{ chapitre.nom }} » et ses
-						{{ quetesDuChapitre(chapitre.id).length }} quête(s) ?
-					</p>
-					<div class="actions">
-						<button class="danger" @click="supprimer(chapitre)">Confirmer la suppression</button
-						><button class="secondaire" @click="suppressionId = null">Annuler</button>
-					</div>
-				</div>
-			</article>
+		<p v-else-if="!editionId && !bloque && !listeFiltree.length">Aucun chapitre ne correspond à ces filtres.</p>
+		<p v-if="!editionId && chapitres.length">{{ listeFiltree.length }} chapitre(s) affiché(s) sur {{ chapitres.length }}.</p>
+	<div v-if="!editionId" class="liste">
+			<ChapitreDetailCarte v-for="chapitre in listeFiltree" :key="chapitre.id" :chapitre="chapitre" :quetes="quetesDuChapitre(chapitre.id)" :etats="etats" :campagnes="campagnesListe" :objets="objets" :indices="indices" :libelle="libelle" :formulaire-ouvert="!!formulaire" :suppression="suppressionId === chapitre.id" @modifier="ouvrir" @dupliquer="dupliquer" @supprimer="suppressionId = $event" @confirmer-suppression="supprimer" @annuler-suppression="suppressionId = null" />
 		</div>
 	</main>
 </template>
@@ -445,7 +396,7 @@ function choisirRecompense(objetId, selectionne) {
 	margin: auto;
 	padding: 2rem 1rem;
 	font-family: system-ui, sans-serif;
-	color: #1f2937;
+	color: var(--texte);
 }
 .entete {
 	display: flex;
@@ -466,18 +417,24 @@ h2 {
 h3 {
 	font-size: 1rem;
 }
-.compteur,
-.aide {
-	color: #536176;
+.compteur, .aide {
+	color: var(--texte-secondaire);
 	font-size: 0.85rem;
 	overflow-wrap: anywhere;
 }
 .panneau {
 	padding: 1.25rem;
-	border: 1px solid #d1d5db;
+	border: 1px solid var(--bordure);
 	border-radius: 8px;
 	min-width: 0;
-	background: white;
+	background: var(--fond-carte);
+}
+.quetes-section {
+	margin-top: 1.5rem;
+	padding: 1.25rem;
+	border: 1px solid var(--bordure);
+	border-radius: 8px;
+	background: var(--fond-carte);
 }
 .liste {
 	display: grid;
@@ -497,19 +454,17 @@ label {
 	font-weight: 600;
 	margin-bottom: 1rem;
 }
-input,
-select,
-textarea {
+input, select, textarea {
 	display: block;
 	width: 100%;
 	box-sizing: border-box;
 	margin-top: 0.5rem;
 	padding: 0.7rem;
-	border: 1px solid #9ca3af;
+	border: 1px solid var(--bordure);
 	border-radius: 5px;
 	font: inherit;
 	color: inherit;
-	background: white;
+	background: var(--fond-surface);
 }
 textarea {
 	resize: vertical;
@@ -518,14 +473,13 @@ fieldset {
 	min-width: 0;
 	margin: 1.25rem 0;
 	padding: 1rem;
-	border: 1px solid #d1d5db;
+	border: 1px solid var(--bordure);
 	border-radius: 6px;
 }
 legend {
 	font-weight: 600;
 }
-.choix,
-.actions {
+.choix, .actions {
 	display: flex;
 	gap: 0.75rem;
 	flex-wrap: wrap;
@@ -542,7 +496,7 @@ legend {
 }
 button {
 	padding: 0.65rem 1rem;
-	background: #215ad3;
+	background: var(--violet);
 	color: white;
 	border: 1px solid transparent;
 	border-radius: 5px;
@@ -551,14 +505,14 @@ button {
 	cursor: pointer;
 }
 .secondaire {
-	background: white;
-	color: #1f2937;
-	border-color: #9ca3af;
+	background: var(--fond-surface);
+	color: var(--texte);
+	border-color: var(--bordure);
 }
 .danger {
-	background: white;
-	color: #be123c;
-	border-color: #be123c;
+	background: var(--fond-surface);
+	color: #ffb4c5;
+	border-color: #d77991;
 }
 button:disabled {
 	opacity: 0.5;
@@ -568,17 +522,16 @@ button:hover:not(:disabled) {
 	filter: brightness(0.92);
 }
 :is(input, select, textarea, button, summary):focus-visible {
-	outline: 3px solid #215ad3;
+	outline: 3px solid var(--violet-clair);
 	outline-offset: 3px;
 }
 .confirmation {
-	color: #166534;
+	color: #8ee0ad;
 	min-height: 1.5rem;
 }
-.erreur,
-.suppression {
-	background: #fff1f2;
-	color: #9f1239;
+.erreur, .suppression {
+	background: #422238;
+	color: #ffb4c5;
 	padding: 1rem;
 	border-radius: 6px;
 }
@@ -588,23 +541,22 @@ button:hover:not(:disabled) {
 .etat {
 	border-radius: 20px;
 	padding: 0.3rem 0.7rem;
-	background: #f3f4f6;
+	background: var(--fond-surface);
 	font-size: 0.85rem;
 }
 .actif {
-	background: #dbeafe;
-	color: #1e40af;
+	background: #33275c;
+	color: var(--violet-clair);
 }
 .termine {
-	background: #dcfce7;
-	color: #166534;
+	background: #203e36;
+	color: #8ee0ad;
 }
 .texte {
 	white-space: pre-wrap;
 	overflow-wrap: anywhere;
 }
-p,
-li {
+p, li {
 	line-height: 1.6;
 	overflow-wrap: anywhere;
 }
@@ -618,7 +570,7 @@ summary {
 	margin-top: 0.5rem;
 }
 .vide {
-	background: #f3f4f6;
+	background: var(--fond-surface);
 	padding: 1rem;
 	border-radius: 8px;
 }
