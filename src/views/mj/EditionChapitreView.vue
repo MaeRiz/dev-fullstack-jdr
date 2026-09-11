@@ -190,204 +190,194 @@ function reordonnerQuete(id, direction) {
 </script>
 
 <template>
-	<main class="chapitres-page">
-		<p v-if="route.query.campagneId"><RouterLink :to="{ name: 'mj-gestion-campagne', params: { campagneId: route.query.campagneId } }">← Retour à la campagne</RouterLink></p>
-		<header class="entete">
-			<div>
-				<h1>
-					{{ campagneFiltre !== undefined ? `Chapitres de ${libelle(campagnesListe, campagneFiltre)}` : "Chapitres" }} <span class="compteur">{{ listeFiltree.length }}</span>
-				</h1>
-				<p>Prépare les étapes de tes campagnes et leurs quêtes.</p>
-			</div>
-			<button ref="boutonAjouter" :disabled="bloque || lectureImpossible || !!formulaire" @click="ouvrir()">
-				Ajouter un chapitre
-			</button>
-		</header>
-		<p v-if="erreur" class="erreur" role="alert">{{ erreur }}</p>
-		<p v-if="erreurBibliotheque" class="erreur" role="alert">{{ erreurBibliotheque }}</p>
-		<p class="confirmation" role="status">{{ message }}</p>
+  <main class="chapitres-page">
+    <p v-if="route.query.campagneId">
+      <RouterLink
+        :to="{
+          name: 'mj-gestion-campagne',
+          params: { campagneId: route.query.campagneId },
+        }"
+        >← Retour à la campagne</RouterLink
+      >
+    </p>
+    <header class="entete">
+      <div>
+        <h1>
+          {{ campagneFiltre !== undefined ? `Chapitres de ${libelle(campagnesListe, campagneFiltre)}` : "Chapitres" }}
+          <span class="compteur">{{ listeFiltree.length }}</span>
+        </h1>
+        <p>Prépare les étapes de tes campagnes et leurs quêtes.</p>
+      </div>
+      <button ref="boutonAjouter" :disabled="bloque || lectureImpossible || !!formulaire" @click="ouvrir()">Ajouter un chapitre</button>
+    </header>
+    <p v-if="erreur" class="erreur" role="alert">{{ erreur }}</p>
+    <p v-if="erreurBibliotheque" class="erreur" role="alert">{{ erreurBibliotheque }}</p>
+    <p class="confirmation" role="status">{{ message }}</p>
 
-		<section v-if="formulaire" class="panneau" aria-labelledby="titre-formulaire">
-			<h2 id="titre-formulaire">{{ editionId ? "Modifier le chapitre" : "Nouveau chapitre" }}</h2>
-			<form @submit.prevent="enregistrer">
-				<div class="champs">
-					<label for="nom-chapitre"
-						>Nom (obligatoire)<input
-							id="nom-chapitre"
-							ref="champNom"
-							v-model="formulaire.nom"
-							required
-							maxlength="150"
-					/></label>
-					<label for="etat-chapitre"
-						>État<select id="etat-chapitre" v-model="formulaire.etat">
-							<option v-for="(nom, valeur) in etats" :key="valeur" :value="valeur">{{ nom }}</option>
-						</select></label
-					>
-				</div>
-				<label for="campagne-chapitre"
-					>Campagne
-					<select id="campagne-chapitre" v-model="formulaire.campagneId">
-						<option :value="null">Sans campagne</option>
-						<option v-for="campagne in campagnesDisponibles" :key="campagne.id" :value="campagne.id">
-							{{ campagne.nom }}
-						</option>
-					</select>
-				</label>
-				<label for="description-chapitre"
-					>Description<textarea
-						id="description-chapitre"
-						v-model="formulaire.description"
-						rows="3"
-						maxlength="10000"
-					/>
-				</label>
-				<label for="commentaire-chapitre"
-					>Commentaire MJ<textarea
-						id="commentaire-chapitre"
-						v-model="formulaire.commentaireMj"
-						rows="3"
-						maxlength="10000"
-					/>
-				</label>
+    <section v-if="formulaire" class="panneau" aria-labelledby="titre-formulaire">
+      <h2 id="titre-formulaire">
+        {{ editionId ? "Modifier le chapitre" : "Nouveau chapitre" }}
+      </h2>
+      <form @submit.prevent="enregistrer">
+        <div class="champs">
+          <label for="nom-chapitre">Nom (obligatoire)<input id="nom-chapitre" ref="champNom" v-model="formulaire.nom" required maxlength="150" /></label>
+          <label for="etat-chapitre"
+            >État<select id="etat-chapitre" v-model="formulaire.etat">
+              <option v-for="(nom, valeur) in etats" :key="valeur" :value="valeur">
+                {{ nom }}
+              </option>
+            </select></label
+          >
+        </div>
+        <label for="campagne-chapitre"
+          >Campagne
+          <select id="campagne-chapitre" v-model="formulaire.campagneId">
+            <option :value="null">Sans campagne</option>
+            <option v-for="campagne in campagnesDisponibles" :key="campagne.id" :value="campagne.id">
+              {{ campagne.nom }}
+            </option>
+          </select>
+        </label>
+        <label for="description-chapitre">Description<textarea id="description-chapitre" v-model="formulaire.description" rows="3" maxlength="10000" /></label>
+        <label for="commentaire-chapitre"
+          >Commentaire MJ<textarea id="commentaire-chapitre" v-model="formulaire.commentaireMj" rows="3" maxlength="10000" />
+        </label>
 
-				<fieldset>
-					<legend>Activation</legend>
-					<label for="activation-chapitre"
-						>Mot de passe d’activation<input
-							id="activation-chapitre"
-							v-model="formulaire.motDePasseActivation"
-							type="text"
-							autocomplete="off"
-							maxlength="200"
-					/></label>
-					<p class="aide">
-						Le joueur devra saisir ce mot de passe exact et posséder tous les objets cochés. Ils ne seront
-						pas consommés.
-					</p>
-					<p>Objets nécessaires (facultatifs)</p>
-					<div class="choix">
-						<label v-for="objet in choixRequis" :key="objet.id" class="case"
-							><input v-model="formulaire.objetsRequis" type="checkbox" :value="objet.id" />{{
-								objet.nom
-							}}</label
-						>
-					</div>
-					<p v-if="!objetsBibliotheque.length" class="aide">
-						Aucun objet disponible. Crée les objets dans
-						<RouterLink to="/mj/contenus">la bibliothèque</RouterLink>.
-					</p>
-				</fieldset>
-				<fieldset>
-					<legend>Résolution et récompenses</legend>
-					<label for="resolution-chapitre"
-						>Mot de passe de résolution<input
-							id="resolution-chapitre"
-							v-model="formulaire.motDePasseResolution"
-							type="text"
-							autocomplete="off"
-							maxlength="200"
-					/></label>
-					<p class="aide">
-						Les mots de passe peuvent rester vides pendant la préparation. Ils doivent être renseignés pour
-						les actions des joueurs.
-					</p>
-					<p>Objets à donner au joueur qui termine le chapitre (facultatifs)</p>
-					<div class="choix">
-						<label v-for="objet in choixRecompenses" :key="objet.id" class="case"
-							><input
-								type="checkbox"
-								:checked="formulaire.recompensesObjets.some((entree) => entree.objetId === objet.id)"
-								@change="choisirRecompense(objet.id, $event.target.checked)"
-							/>{{ objet.nom }}</label
-						>
-					</div>
-					<div class="champs">
-						<label
-							v-for="recompense in formulaire.recompensesObjets"
-							:key="recompense.objetId"
-							:for="`quantite-${recompense.objetId}`"
-							>Quantité : {{ libelle(objets, recompense.objetId) }}
-							<input
-								:id="`quantite-${recompense.objetId}`"
-								v-model.number="recompense.quantite"
-								type="number"
-								min="1"
-								:max="Number.MAX_SAFE_INTEGER"
-								step="1"
-								required
-							/>
-						</label>
-					</div>
-					<p>Indices partagés avec la campagne (facultatifs)</p>
-					<div class="choix">
-						<label v-for="indice in choixIndices" :key="indice.id" class="case"
-							><input v-model="formulaire.recompensesIndices" type="checkbox" :value="indice.id" />{{
-								indice.nom
-							}}</label
-						>
-					</div>
-					<p v-if="!indicesBibliotheque.length" class="aide">
-						Aucun indice disponible. Crée les indices dans
-						<RouterLink to="/mj/contenus">la bibliothèque</RouterLink>.
-					</p>
-				</fieldset>
-				<fieldset v-if="editionId">
-					<legend>Quêtes du chapitre</legend>
-					<p class="aide">
-						<RouterLink :to="{ name: 'mj-edition-quete', query: { chapitreId: editionId } }">Créer une quête pour ce chapitre</RouterLink>.
-					</p>
-					<p>{{ quetesEdition.length }} quête(s) associée(s). La liste complète se trouve sous le formulaire.</p>
-				</fieldset>
-				<div class="actions">
-					<button type="submit">Enregistrer</button
-					><button type="button" class="secondaire" @click="fermer">Annuler</button>
-				</div>
-			</form>
-		</section>
+        <fieldset>
+          <legend>Activation</legend>
+          <label for="activation-chapitre"
+            >Mot de passe d’activation<input id="activation-chapitre" v-model="formulaire.motDePasseActivation" type="text" autocomplete="off" maxlength="200"
+          /></label>
+          <p class="aide">Le joueur devra saisir ce mot de passe exact et posséder tous les objets cochés. Ils ne seront pas consommés.</p>
+          <p>Objets nécessaires (facultatifs)</p>
+          <div class="choix">
+            <label v-for="objet in choixRequis" :key="objet.id" class="case"
+              ><input v-model="formulaire.objetsRequis" type="checkbox" :value="objet.id" />{{ objet.nom }}</label
+            >
+          </div>
+          <p v-if="!objetsBibliotheque.length" class="aide">
+            Aucun objet disponible. Crée les objets dans
+            <RouterLink to="/mj/contenus">la bibliothèque</RouterLink>.
+          </p>
+        </fieldset>
+        <fieldset>
+          <legend>Résolution et récompenses</legend>
+          <label for="resolution-chapitre"
+            >Mot de passe de résolution<input id="resolution-chapitre" v-model="formulaire.motDePasseResolution" type="text" autocomplete="off" maxlength="200"
+          /></label>
+          <p class="aide">Les mots de passe peuvent rester vides pendant la préparation. Ils doivent être renseignés pour les actions des joueurs.</p>
+          <p>Objets à donner au joueur qui termine le chapitre (facultatifs)</p>
+          <div class="choix">
+            <label v-for="objet in choixRecompenses" :key="objet.id" class="case"
+              ><input
+                type="checkbox"
+                :checked="formulaire.recompensesObjets.some((entree) => entree.objetId === objet.id)"
+                @change="choisirRecompense(objet.id, $event.target.checked)"
+              />{{ objet.nom }}</label
+            >
+          </div>
+          <div class="champs">
+            <label v-for="recompense in formulaire.recompensesObjets" :key="recompense.objetId" :for="`quantite-${recompense.objetId}`"
+              >Quantité : {{ libelle(objets, recompense.objetId) }}
+              <input
+                :id="`quantite-${recompense.objetId}`"
+                v-model.number="recompense.quantite"
+                type="number"
+                min="1"
+                :max="Number.MAX_SAFE_INTEGER"
+                step="1"
+                required
+              />
+            </label>
+          </div>
+          <p>Indices partagés avec la campagne (facultatifs)</p>
+          <div class="choix">
+            <label v-for="indice in choixIndices" :key="indice.id" class="case"
+              ><input v-model="formulaire.recompensesIndices" type="checkbox" :value="indice.id" />{{ indice.nom }}</label
+            >
+          </div>
+          <p v-if="!indicesBibliotheque.length" class="aide">
+            Aucun indice disponible. Crée les indices dans
+            <RouterLink to="/mj/contenus">la bibliothèque</RouterLink>.
+          </p>
+        </fieldset>
+        <fieldset v-if="editionId">
+          <legend>Quêtes du chapitre</legend>
+          <p class="aide">
+            <RouterLink
+              :to="{
+                name: 'mj-edition-quete',
+                query: { chapitreId: editionId },
+              }"
+              >Créer une quête pour ce chapitre</RouterLink
+            >.
+          </p>
+          <p>{{ quetesEdition.length }} quête(s) associée(s). La liste complète se trouve sous le formulaire.</p>
+        </fieldset>
+        <div class="actions"><button type="submit">Enregistrer</button><button type="button" class="secondaire" @click="fermer">Annuler</button></div>
+      </form>
+    </section>
 
-		<section v-if="editionId" class="quetes-section" aria-labelledby="titre-quetes">
-			<header class="entete">
-				<div><h2 id="titre-quetes">Quêtes du chapitre</h2><p>Crée, modifie ou réorganise les quêtes de ce chapitre.</p></div>
-				<button type="button" @click="ouvrirQuete()">Nouvelle quête</button>
-			</header>
-			<p v-if="!quetesEdition.length" class="vide">Aucune quête associée à ce chapitre.</p>
-			<QueteListe v-else :quetes="quetesEdition" :ordre="formulaire.quetes" :libelle-chapitre="() => formulaire?.nom || ''" @modifier="ouvrirQuete" @dupliquer="dupliquerQuete" @supprimer="supprimerQuete" @deplacer="reordonnerQuete" />
-		</section>
+    <section v-if="editionId" class="quetes-section" aria-labelledby="titre-quetes">
+      <header class="entete">
+        <div>
+          <h2 id="titre-quetes">Quêtes du chapitre</h2>
+          <p>Crée, modifie ou réorganise les quêtes de ce chapitre.</p>
+        </div>
+        <button type="button" @click="ouvrirQuete()">Nouvelle quête</button>
+      </header>
+      <p v-if="!quetesEdition.length" class="vide">Aucune quête associée à ce chapitre.</p>
+      <QueteListe
+        v-else
+        :quetes="quetesEdition"
+        :ordre="formulaire.quetes"
+        :libelle-chapitre="() => formulaire?.nom || ''"
+        @modifier="ouvrirQuete"
+        @dupliquer="dupliquerQuete"
+        @supprimer="supprimerQuete"
+        @deplacer="reordonnerQuete"
+      />
+    </section>
 
-		<div v-if="!editionId" class="champs filtres">
-			<label for="filtre-campagne"
-				>Filtrer par campagne<select
-					id="filtre-campagne"
-					v-model="campagneFiltre"
-					:disabled="!!formulaire"
-					@change="suppressionId = null"
-				>
-					<option :value="undefined">Toutes les campagnes</option>
-					<option :value="null">Sans campagne</option>
-					<option v-for="campagne in campagnesDisponibles" :key="campagne.id" :value="campagne.id">
-						{{ campagne.nom }}
-					</option>
-				</select></label
-			>
-			<label for="recherche-chapitre"
-				>Rechercher<input
-					id="recherche-chapitre"
-					v-model="recherche"
-					type="search"
-					placeholder="Nom ou description"
-			/></label>
-		</div>
-		<div v-if="!editionId && !bloque && !chapitres.length" class="vide">
-			<h2>Aucun chapitre pour le moment</h2>
-			<p>Ajoute ton premier chapitre pour préparer ta campagne.</p>
-		</div>
-		<p v-else-if="!editionId && !bloque && !listeFiltree.length">Aucun chapitre ne correspond à ces filtres.</p>
-		<p v-if="!editionId && chapitres.length">{{ listeFiltree.length }} chapitre(s) affiché(s) sur {{ chapitres.length }}.</p>
-	<div v-if="!editionId" class="liste">
-			<ChapitreDetailCarte v-for="chapitre in listeFiltree" :key="chapitre.id" :chapitre="chapitre" :quetes="quetesDuChapitre(chapitre.id)" :etats="etats" :campagnes="campagnesListe" :objets="objets" :indices="indices" :libelle="libelle" :formulaire-ouvert="!!formulaire" :suppression="suppressionId === chapitre.id" @modifier="ouvrir" @dupliquer="dupliquer" @supprimer="suppressionId = $event" @confirmer-suppression="supprimer" @annuler-suppression="suppressionId = null" />
-		</div>
-	</main>
+    <div v-if="!editionId" class="champs filtres">
+      <label for="filtre-campagne"
+        >Filtrer par campagne<select id="filtre-campagne" v-model="campagneFiltre" :disabled="!!formulaire" @change="suppressionId = null">
+          <option :value="undefined">Toutes les campagnes</option>
+          <option :value="null">Sans campagne</option>
+          <option v-for="campagne in campagnesDisponibles" :key="campagne.id" :value="campagne.id">
+            {{ campagne.nom }}
+          </option>
+        </select></label
+      >
+      <label for="recherche-chapitre">Rechercher<input id="recherche-chapitre" v-model="recherche" type="search" placeholder="Nom ou description" /></label>
+    </div>
+    <div v-if="!editionId && !bloque && !chapitres.length" class="vide">
+      <h2>Aucun chapitre pour le moment</h2>
+      <p>Ajoute ton premier chapitre pour préparer ta campagne.</p>
+    </div>
+    <p v-else-if="!editionId && !bloque && !listeFiltree.length">Aucun chapitre ne correspond à ces filtres.</p>
+    <p v-if="!editionId && chapitres.length">{{ listeFiltree.length }} chapitre(s) affiché(s) sur {{ chapitres.length }}.</p>
+    <div v-if="!editionId" class="liste">
+      <ChapitreDetailCarte
+        v-for="chapitre in listeFiltree"
+        :key="chapitre.id"
+        :chapitre="chapitre"
+        :quetes="quetesDuChapitre(chapitre.id)"
+        :etats="etats"
+        :campagnes="campagnesListe"
+        :objets="objets"
+        :indices="indices"
+        :libelle="libelle"
+        :formulaire-ouvert="!!formulaire"
+        :suppression="suppressionId === chapitre.id"
+        @modifier="ouvrir"
+        @dupliquer="dupliquer"
+        @supprimer="suppressionId = $event"
+        @confirmer-suppression="supprimer"
+        @annuler-suppression="suppressionId = null"
+      />
+    </div>
+  </main>
 </template>
 
 <style scoped>

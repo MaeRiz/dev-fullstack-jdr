@@ -91,23 +91,32 @@ function supprimerContenu(id) {
     <p>Préparez les contenus réutilisables de vos campagnes.</p>
     <p v-if="messageErreur" role="alert">{{ messageErreur }}</p>
     <div class="categories" aria-label="Types de contenus">
-      <button v-for="type in types" :key="type.valeur" type="button"
-        :aria-pressed="typeSelectionne === type.valeur" :class="{ actif: typeSelectionne === type.valeur }"
-        @click="changerType(type.valeur)">{{ type.libelle }}</button>
+      <button
+        v-for="type in types"
+        :key="type.valeur"
+        type="button"
+        :aria-pressed="typeSelectionne === type.valeur"
+        :class="{ actif: typeSelectionne === type.valeur }"
+        @click="changerType(type.valeur)"
+      >{{ type.libelle }}</button>
     </div>
     <div class="colonnes">
       <section aria-label="Liste des contenus">
         <label for="recherche-contenu">Rechercher par nom, description ou texte</label>
-        <input id="recherche-contenu" type="search" v-model="recherche">
+        <input id="recherche-contenu" type="search" v-model="recherche" />
         <p>{{ resultats.length }} résultat(s)</p>
         <p v-if="contenusFiltres.length === 0">Aucun contenu dans cette catégorie. Utilisez le formulaire pour en ajouter un.</p>
         <p v-else-if="resultats.length === 0">Aucun contenu ne correspond à votre recherche.</p>
-        <ContenuListe v-else :contenus="resultats"
-          @modifier="modifierContenu" @dupliquer="dupliquerContenu" @supprimer="supprimerContenu" />
+        <ContenuListe v-else :contenus="resultats" @modifier="modifierContenu" @dupliquer="dupliquerContenu" @supprimer="supprimerContenu" />
       </section>
-      <ContenuFormulaire :key="contenuSelectionne ? contenuSelectionne.id : typeSelectionne"
-        :type="typeSelectionne" :contenu="contenuSelectionne" :desactive="store.lectureImpossible"
-        @sauvegarde="sauvegarderContenu" @annuler="contenuSelectionne = null" />
+      <ContenuFormulaire
+        :key="contenuSelectionne ? contenuSelectionne.id : typeSelectionne"
+        :type="typeSelectionne"
+        :contenu="contenuSelectionne"
+        :desactive="store.lectureImpossible"
+        @sauvegarde="sauvegarderContenu"
+        @annuler="contenuSelectionne = null"
+      />
     </div>
   </main>
 </template>

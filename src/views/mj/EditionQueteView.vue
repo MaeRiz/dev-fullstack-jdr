@@ -77,39 +77,53 @@ function supprimer(id) {
 </script>
 
 <template>
-	<main class="quetes-page">
-		<p v-if="route.query.chapitreId"><RouterLink :to="{ name: 'mj-edition-chapitre', query: { campagneId: route.query.campagneId, chapitreId: route.query.chapitreId } }">← Retour au chapitre</RouterLink></p>
-		<h1>{{ route.query.chapitreId ? `Quêtes du chapitre ${libelleChapitre(route.query.chapitreId)}` : "Quêtes" }}</h1>
-		<p v-if="messageStockage" role="alert">{{ messageStockage }}</p>
-		<div v-if="route.query.chapitreId" class="progression">
-			<span>Quêtes terminées : {{ quetesAffichees.filter((quete) => quete.etat === 'terminee').length }} / {{ quetesAffichees.length }}</span>
-			<div class="barre"><span :style="{ width: `${quetesAffichees.length ? quetesAffichees.filter((quete) => quete.etat === 'terminee').length / quetesAffichees.length * 100 : 0}%` }"></span></div>
-		</div>
+  <main class="quetes-page">
+    <p v-if="route.query.chapitreId">
+      <RouterLink
+        :to="{
+          name: 'mj-edition-chapitre',
+          query: {
+            campagneId: route.query.campagneId,
+            chapitreId: route.query.chapitreId,
+          },
+        }"
+        >← Retour au chapitre</RouterLink
+      >
+    </p>
+    <h1>
+      {{ route.query.chapitreId ? `Quêtes du chapitre ${libelleChapitre(route.query.chapitreId)}` : "Quêtes" }}
+    </h1>
+    <p v-if="messageStockage" role="alert">{{ messageStockage }}</p>
+    <div v-if="route.query.chapitreId" class="progression">
+      <span
+        >Quêtes terminées :
+        {{ quetesAffichees.filter((quete) => quete.etat === "terminee").length }}
+        / {{ quetesAffichees.length }}</span
+      >
+      <div class="barre">
+        <span
+          :style="{
+            width: `${quetesAffichees.length ? (quetesAffichees.filter((quete) => quete.etat === 'terminee').length / quetesAffichees.length) * 100 : 0}%`,
+          }"
+        ></span>
+      </div>
+    </div>
 
-		<div class="colonnes">
-			<section aria-label="Liste des quêtes">
-				<p v-if="quetesAffichees.length === 0">
-					Pas encore de quête enregistrée, le formulaire ci-dessous permet d'en créer une.
-				</p>
-				<QueteListe
-					v-else
-					:quetes="quetesAffichees"
-					:libelle-chapitre="libelleChapitre"
-					@modifier="modifier"
-					@dupliquer="dupliquer"
-					@supprimer="supprimer"
-				/>
-			</section>
+    <div class="colonnes">
+      <section aria-label="Liste des quêtes">
+        <p v-if="quetesAffichees.length === 0">Pas encore de quête enregistrée, le formulaire ci-dessous permet d'en créer une.</p>
+        <QueteListe v-else :quetes="quetesAffichees" :libelle-chapitre="libelleChapitre" @modifier="modifier" @dupliquer="dupliquer" @supprimer="supprimer" />
+      </section>
 
-			<QueteFormulaire
-				:key="queteEnEdition ? queteEnEdition.id : 'nouvelle'"
-				:quete="queteEnEdition"
-					:chapitres="chapitresFormulaire"
-				@sauvegarde="sauvegarder"
-				@annuler="queteEnEdition = null"
-			/>
-		</div>
-	</main>
+      <QueteFormulaire
+        :key="queteEnEdition ? queteEnEdition.id : 'nouvelle'"
+        :quete="queteEnEdition"
+        :chapitres="chapitresFormulaire"
+        @sauvegarde="sauvegarder"
+        @annuler="queteEnEdition = null"
+      />
+    </div>
+  </main>
 </template>
 
 <style scoped>

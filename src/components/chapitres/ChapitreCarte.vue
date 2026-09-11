@@ -15,10 +15,19 @@ const emit = defineEmits(["ouvrir", "dupliquer", "supprimer", "deplacer"]);
   <article class="carte">
     <OrdreControls :haut-desactive="position === 0" :bas-desactive="position === total - 1" :nom="chapitre.nom" @deplacer="emit('deplacer', $event)" />
     <div>
-      <div class="entete"><h3><span class="ordre">{{ position + 1 }}</span><span class="icone">{{ chapitre.etat === 'termine' ? '✓' : chapitre.etat === 'actif' ? '▶' : '○' }}</span> {{ chapitre.nom }}</h3><span class="badge" :class="chapitre.etat">{{ chapitre.etat }}</span></div>
+      <div class="entete">
+        <h3>
+          <span class="ordre">{{ position + 1 }}</span
+          ><span class="icone">{{ chapitre.etat === "termine" ? "✓" : chapitre.etat === "actif" ? "▶" : "○" }}</span>
+          {{ chapitre.nom }}
+        </h3>
+        <span class="badge" :class="chapitre.etat">{{ chapitre.etat }}</span>
+      </div>
       <p>{{ chapitre.description || "Aucune description." }}</p>
       <p class="compteur">{{ quetesTerminees }} / {{ quetes.length }} quête(s) terminée(s)</p>
-      <ul v-if="quetes.length"><li v-for="quete in quetes" :key="quete.id">{{ quete.nom }} — {{ quete.etat }}</li></ul>
+      <ul v-if="quetes.length">
+        <li v-for="quete in quetes" :key="quete.id">{{ quete.nom }} — {{ quete.etat }}</li>
+      </ul>
       <div class="actions">
         <button type="button" class="btn secondary" @click="emit('ouvrir', chapitre.id)">Gérer le chapitre</button>
         <button type="button" class="btn secondary" @click="emit('dupliquer', chapitre.id)">Dupliquer</button>

@@ -9,8 +9,12 @@ const emit = defineEmits(['deplacer']);
 
 <template>
   <div class="ordre-actions">
-    <button type="button" class="deplacer" :disabled="hautDesactive" :aria-label="`Monter ${nom}`" @click="emit('deplacer', -1)"><span class="chevron haut"></span></button>
-    <button type="button" class="deplacer" :disabled="basDesactive" :aria-label="`Descendre ${nom}`" @click="emit('deplacer', 1)"><span class="chevron bas"></span></button>
+    <button type="button" class="deplacer" :disabled="hautDesactive" :aria-label="`Monter ${nom}`" @click="emit('deplacer', -1)">
+      <span class="chevron haut"></span>
+    </button>
+    <button type="button" class="deplacer" :disabled="basDesactive" :aria-label="`Descendre ${nom}`" @click="emit('deplacer', 1)">
+      <span class="chevron bas"></span>
+    </button>
   </div>
 </template>
 

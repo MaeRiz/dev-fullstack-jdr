@@ -4,8 +4,11 @@ defineProps({ joueur: { type: Object, required: true } });
 
 <template>
   <article class="joueur">
-    <div><strong>{{ joueur.nom }}</strong><span class="badge" :class="joueur.etat">{{ joueur.etat }}</span></div>
-    <small>{{ joueur.description || 'Aucune description.' }}</small>
+    <div>
+      <strong>{{ joueur.nom }}</strong
+      ><span class="badge" :class="joueur.etat">{{ joueur.etat }}</span>
+    </div>
+    <small>{{ joueur.description || "Aucune description." }}</small>
   </article>
 </template>
 

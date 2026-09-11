@@ -10,43 +10,40 @@ const emit = defineEmits(["modifier", "dupliquer", "supprimer", "exporter"]);
 </script>
 
 <template>
-	<ul>
-		<li v-for="campagne in campagnes" :key="campagne.id">
-			<h2>{{ campagne.nom }}</h2>
-			<p><span class="badge" :class="campagne.etat">{{ campagne.etat }}</span></p>
-			<p>{{ compterChapitres(campagne.id) }} chapitre(s)</p>
-			<p>{{ compterJoueurs(campagne.id) }} joueur(s)</p>
-			<div class="progression">
-				<div class="progression-entete"><span>Progression</span><strong>{{ progression(campagne.id).termines }} / {{ progression(campagne.id).total }}</strong></div>
-				<div class="barre"><span :style="{ width: `${progression(campagne.id).total ? progression(campagne.id).termines / progression(campagne.id).total * 100 : 0}%` }"></span></div>
-				<small>{{ compterQuetesTerminees(campagne.id) }} quête(s) terminée(s)</small>
-			</div>
-			<p class="description">{{ campagne.description || "Aucune description." }}</p>
-			<details v-if="campagne.commentaire">
-				<summary>Commentaire MJ</summary>
-				<p class="description">{{ campagne.commentaire }}</p>
-			</details>
-			<div class="actions">
-				<button type="button" class="btn secondary" :aria-label="`Modifier ${campagne.nom}`" @click="emit('modifier', campagne.id)">
-					Modifier
-				</button>
-				<button type="button" class="btn secondary" :aria-label="`Dupliquer ${campagne.nom}`" @click="emit('dupliquer', campagne.id)">
-					Dupliquer
-				</button>
-				<button type="button" class="btn secondary" :aria-label="`Exporter ${campagne.nom}`" @click="emit('exporter', campagne.id)">
-					Exporter
-				</button>
-				<button
-					type="button"
-					class="btn supprimer"
-					:aria-label="`Supprimer ${campagne.nom}`"
-					@click="emit('supprimer', campagne.id)"
-				>
-					Supprimer
-				</button>
-			</div>
-		</li>
-	</ul>
+  <ul>
+    <li v-for="campagne in campagnes" :key="campagne.id">
+      <h2>{{ campagne.nom }}</h2>
+      <p>
+        <span class="badge" :class="campagne.etat">{{ campagne.etat }}</span>
+      </p>
+      <p>{{ compterChapitres(campagne.id) }} chapitre(s)</p>
+      <p>{{ compterJoueurs(campagne.id) }} joueur(s)</p>
+      <div class="progression">
+        <div class="progression-entete">
+          <span>Progression</span><strong>{{ progression(campagne.id).termines }} / {{ progression(campagne.id).total }}</strong>
+        </div>
+        <div class="barre">
+          <span
+            :style="{
+              width: `${progression(campagne.id).total ? (progression(campagne.id).termines / progression(campagne.id).total) * 100 : 0}%`,
+            }"
+          ></span>
+        </div>
+        <small>{{ compterQuetesTerminees(campagne.id) }} quête(s) terminée(s)</small>
+      </div>
+      <p class="description">{{ campagne.description || "Aucune description." }}</p>
+      <details v-if="campagne.commentaire">
+        <summary>Commentaire MJ</summary>
+        <p class="description">{{ campagne.commentaire }}</p>
+      </details>
+      <div class="actions">
+        <button type="button" class="btn secondary" :aria-label="`Modifier ${campagne.nom}`" @click="emit('modifier', campagne.id)">Modifier</button>
+        <button type="button" class="btn secondary" :aria-label="`Dupliquer ${campagne.nom}`" @click="emit('dupliquer', campagne.id)">Dupliquer</button>
+        <button type="button" class="btn secondary" :aria-label="`Exporter ${campagne.nom}`" @click="emit('exporter', campagne.id)">Exporter</button>
+        <button type="button" class="btn supprimer" :aria-label="`Supprimer ${campagne.nom}`" @click="emit('supprimer', campagne.id)">Supprimer</button>
+      </div>
+    </li>
+  </ul>
 </template>
 
 <style scoped>
