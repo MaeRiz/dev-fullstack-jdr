@@ -1,37 +1,22 @@
-# jdr-project
+# Suivi de campagne JDR
 
-This template should help get you started developing with Vue 3 in Vite.
+Application Vue.js (Vue Router + Pinia) pour préparer et suivre des campagnes de jeu de rôle. Aucun backend : les données sont stockées dans le navigateur (localStorage).
 
-## Recommended IDE Setup
+## Membres du groupe
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- Mahery Gonin
+- Abdourahmane Coulibaly
+- Morgan Lucas
+- Lorenzo Porretti
 
-## Recommended Browser Setup
-
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+## Installation et lancement
 
 ```sh
 npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
 npm run dev
 ```
 
-### Compile and Minify for Production
+Build de production :
 
 ```sh
 npm run build
@@ -39,5 +24,4 @@ npm run build
 
 ## Fonctionnalités bonus
 
-- **Génération aléatoire d'objets et de lieux** : bouton d'aide à la création dans le formulaire de contenus de l'interface MJ.
-
+- Génération aléatoire d'objets et de lieux (bouton d'aide à la création dans le formulaire de contenus de l'interface MJ).
