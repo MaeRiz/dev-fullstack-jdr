@@ -32,43 +32,41 @@ function gererSubmit() {
 </script>
 
 <template>
-	<section class="panel formulaire">
-		<h2>{{ campagne ? "Modifier" : "Ajouter" }} une campagne</h2>
-		<form @submit.prevent="gererSubmit">
-			<div>
-				<label for="campagne-nom">Nom (obligatoire)</label>
-				<input id="campagne-nom" class="control" type="text" v-model="formulaire.nom" required />
-			</div>
+  <section class="panel formulaire">
+    <h2>{{ campagne ? "Modifier" : "Ajouter" }} une campagne</h2>
+    <form @submit.prevent="gererSubmit">
+      <div>
+        <label for="campagne-nom">Nom (obligatoire)</label>
+        <input id="campagne-nom" class="control" type="text" v-model="formulaire.nom" required />
+      </div>
 
-			<div>
-				<label for="campagne-etat">État</label>
-					<select id="campagne-etat" class="control" v-model="formulaire.etat">
-					<option value="brouillon">Brouillon</option>
-					<option value="disponible">Disponible</option>
-					<option value="active">Active</option>
-				</select>
-			</div>
+      <div>
+        <label for="campagne-etat">État</label>
+        <select id="campagne-etat" class="control" v-model="formulaire.etat">
+          <option value="brouillon">Brouillon</option>
+          <option value="disponible">Disponible</option>
+          <option value="active">Active</option>
+        </select>
+      </div>
 
-			<div>
-				<label for="campagne-description">Description</label>
-				<textarea id="campagne-description" class="control" v-model="formulaire.description"></textarea>
-			</div>
+      <div>
+        <label for="campagne-description">Description</label>
+        <textarea id="campagne-description" class="control" v-model="formulaire.description"></textarea>
+      </div>
 
-			<div>
-				<label for="campagne-commentaire">Commentaire réservé au MJ</label>
-				<textarea id="campagne-commentaire" class="control" v-model="formulaire.commentaire"></textarea>
-			</div>
+      <div>
+        <label for="campagne-commentaire">Commentaire réservé au MJ</label>
+        <textarea id="campagne-commentaire" class="control" v-model="formulaire.commentaire"></textarea>
+      </div>
 
-			<p v-if="erreur" role="alert">{{ erreur }}</p>
+      <p v-if="erreur" role="alert">{{ erreur }}</p>
 
-			<div class="actions">
-				<button type="submit" class="btn">{{ campagne ? "Enregistrer" : "Ajouter" }}</button>
-				<button v-if="campagne" type="button" class="btn secondary" @click="emit('annuler')">
-					Annuler
-				</button>
-			</div>
-		</form>
-	</section>
+      <div class="actions">
+        <button type="submit" class="btn">{{ campagne ? "Enregistrer" : "Ajouter" }}</button>
+        <button v-if="campagne" type="button" class="btn secondary" @click="emit('annuler')">Annuler</button>
+      </div>
+    </form>
+  </section>
 </template>
 
 <style scoped>

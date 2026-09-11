@@ -81,92 +81,106 @@ function choisirObjet(id, choisi) {
 </script>
 
 <template>
-	<section class="panel formulaire">
-		<h2>{{ quete ? "Modifier" : "Ajouter" }} une quête</h2>
-		<form @submit.prevent="gererSubmit">
-			<p v-if="erreurReferences" role="alert">{{ erreurReferences }}</p>
-			<p v-if="chapitres.length === 0" role="alert">
-				Créez d'abord un chapitre : une quête doit lui être rattachée.
-			</p>
+  <section class="panel formulaire">
+    <h2>{{ quete ? "Modifier" : "Ajouter" }} une quête</h2>
+    <form @submit.prevent="gererSubmit">
+      <p v-if="erreurReferences" role="alert">{{ erreurReferences }}</p>
+      <p v-if="chapitres.length === 0" role="alert">Créez d'abord un chapitre : une quête doit lui être rattachée.</p>
 
-			<div>
-				<label for="quete-nom">Nom (obligatoire)</label>
-				<input id="quete-nom" class="control" type="text" v-model="formulaire.nom" required />
-			</div>
+      <div>
+        <label for="quete-nom">Nom (obligatoire)</label>
+        <input id="quete-nom" class="control" type="text" v-model="formulaire.nom" required />
+      </div>
 
-			<div>
-				<label for="quete-chapitre">Chapitre (obligatoire)</label>
-				<select id="quete-chapitre" class="control" v-model="formulaire.chapitreId" :disabled="chapitres.length === 0">
-					<option v-for="chapitre in chapitres" :key="chapitre.id" :value="chapitre.id">
-						{{ chapitre.nom }}
-					</option>
-				</select>
-			</div>
+      <div>
+        <label for="quete-chapitre">Chapitre (obligatoire)</label>
+        <select id="quete-chapitre" class="control" v-model="formulaire.chapitreId" :disabled="chapitres.length === 0">
+          <option v-for="chapitre in chapitres" :key="chapitre.id" :value="chapitre.id">
+            {{ chapitre.nom }}
+          </option>
+        </select>
+      </div>
 
-			<div>
-				<label for="quete-etat">État</label>
-				<select id="quete-etat" class="control" v-model="formulaire.etat">
-					<option value="inactive">Inactive</option>
-					<option value="active">Active</option>
-					<option value="terminee">Terminée</option>
-					<option value="abandonnee">Abandonnée</option>
-				</select>
-			</div>
+      <div>
+        <label for="quete-etat">État</label>
+        <select id="quete-etat" class="control" v-model="formulaire.etat">
+          <option value="inactive">Inactive</option>
+          <option value="active">Active</option>
+          <option value="terminee">Terminée</option>
+          <option value="abandonnee">Abandonnée</option>
+        </select>
+      </div>
 
-			<div>
-				<label for="quete-description">Description</label>
-				<textarea id="quete-description" class="control" v-model="formulaire.description"></textarea>
-			</div>
+      <div>
+        <label for="quete-description">Description</label>
+        <textarea id="quete-description" class="control" v-model="formulaire.description"></textarea>
+      </div>
 
-			<div>
-				<label for="quete-lieu">Lieu</label>
-				<select id="quete-lieu" class="control" v-model="formulaire.lieuId">
-					<option :value="null">Choisir un lieu de la bibliothèque</option>
-					<option v-for="lieu in references.contenus.filter(contenu => contenu.type === 'lieu' && !contenu.archive)" :key="lieu.id" :value="lieu.id">{{ lieu.nom }}</option>
-				</select>
-				<p v-if="formulaire.lieu && !formulaire.lieuId">Ancien lieu : {{ formulaire.lieu }}. Sélectionne le lieu correspondant.</p>
-			</div>
+      <div>
+        <label for="quete-lieu">Lieu</label>
+        <select id="quete-lieu" class="control" v-model="formulaire.lieuId">
+          <option :value="null">Choisir un lieu de la bibliothèque</option>
+          <option v-for="lieu in references.contenus.filter((contenu) => contenu.type === 'lieu' && !contenu.archive)" :key="lieu.id" :value="lieu.id">
+            {{ lieu.nom }}
+          </option>
+        </select>
+        <p v-if="formulaire.lieu && !formulaire.lieuId">Ancien lieu : {{ formulaire.lieu }}. Sélectionne le lieu correspondant.</p>
+      </div>
 
-			<div>
-				<label for="quete-commentaire">Commentaire réservé au MJ</label>
-				<textarea id="quete-commentaire" class="control" v-model="formulaire.commentaire"></textarea>
-			</div>
+      <div>
+        <label for="quete-commentaire">Commentaire réservé au MJ</label>
+        <textarea id="quete-commentaire" class="control" v-model="formulaire.commentaire"></textarea>
+      </div>
 
-			<div>
-				<label for="quete-mdp-activation">Mot de passe d'activation</label>
-				<input id="quete-mdp-activation" class="control" type="text" v-model="formulaire.motDePasseActivation" />
-			</div>
+      <div>
+        <label for="quete-mdp-activation">Mot de passe d'activation</label>
+        <input id="quete-mdp-activation" class="control" type="text" v-model="formulaire.motDePasseActivation" />
+      </div>
 
-			<div>
-				<label for="quete-mdp-resolution">Mot de passe de résolution</label>
-				<input id="quete-mdp-resolution" class="control" type="text" v-model="formulaire.motDePasseResolution" />
-			</div>
+      <div>
+        <label for="quete-mdp-resolution">Mot de passe de résolution</label>
+        <input id="quete-mdp-resolution" class="control" type="text" v-model="formulaire.motDePasseResolution" />
+      </div>
 
-			<div>
-				<p>Objets récompenses</p>
-				<label v-for="objet in references.contenus.filter(contenu => contenu.type === 'objet' && !contenu.archive)" :key="objet.id" class="case-recompense">
-					<input type="checkbox" :checked="formulaire.recompensesObjets.some(entree => entree.objetId === objet.id)" @change="choisirObjet(objet.id, $event.target.checked)" />{{ objet.nom }}
-				</label>
-				<label v-for="objet in formulaire.recompensesObjets" :key="objet.objetId">Quantité : {{ references.contenus.find(contenu => contenu.id === objet.objetId)?.nom ?? 'Objet indisponible' }}
-					<input class="control" v-model.number="objet.quantite" type="number" min="1" :max="Number.MAX_SAFE_INTEGER" step="1" required />
-				</label>
-				<p>Indices partagés</p>
-				<label v-for="indice in references.contenus.filter(contenu => contenu.type === 'indice' && !contenu.archive)" :key="indice.id" class="case-recompense">
-					<input v-model="formulaire.recompensesIndices" type="checkbox" :value="indice.id" />{{ indice.nom }}
-				</label>
-					<label v-if="formulaire.recompense" for="quete-recompense">Ancienne récompense (note à convertir en sélections ci-dessus)<input id="quete-recompense" class="control" v-model="formulaire.recompense" type="text" /></label>
-			</div>
+      <div>
+        <p>Objets récompenses</p>
+        <label v-for="objet in references.contenus.filter((contenu) => contenu.type === 'objet' && !contenu.archive)" :key="objet.id" class="case-recompense">
+          <input
+            type="checkbox"
+            :checked="formulaire.recompensesObjets.some((entree) => entree.objetId === objet.id)"
+            @change="choisirObjet(objet.id, $event.target.checked)"
+          />{{ objet.nom }}
+        </label>
+        <label v-for="objet in formulaire.recompensesObjets" :key="objet.objetId"
+          >Quantité :
+          {{ references.contenus.find((contenu) => contenu.id === objet.objetId)?.nom ?? "Objet indisponible" }}
+          <input class="control" v-model.number="objet.quantite" type="number" min="1" :max="Number.MAX_SAFE_INTEGER" step="1" required />
+        </label>
+        <p>Indices partagés</p>
+        <label
+          v-for="indice in references.contenus.filter((contenu) => contenu.type === 'indice' && !contenu.archive)"
+          :key="indice.id"
+          class="case-recompense"
+        >
+          <input v-model="formulaire.recompensesIndices" type="checkbox" :value="indice.id" />{{ indice.nom }}
+        </label>
+        <label v-if="formulaire.recompense" for="quete-recompense"
+          >Ancienne récompense (note à convertir en sélections ci-dessus)<input
+            id="quete-recompense"
+            class="control"
+            v-model="formulaire.recompense"
+            type="text"
+        /></label>
+      </div>
 
-			<p v-if="erreur" role="alert">{{ erreur }}</p>
+      <p v-if="erreur" role="alert">{{ erreur }}</p>
 
-			<div class="actions">
-				<button type="submit" class="btn" :disabled="chapitres.length === 0 || !!erreurReferences">
-					{{ quete ? "Enregistrer" : "Ajouter" }}
-				</button>
-				<button v-if="quete" type="button" class="btn secondary" @click="emit('annuler')">Annuler</button>
-			</div>
-		</form>
-	</section>
+      <div class="actions">
+        <button type="submit" class="btn" :disabled="chapitres.length === 0 || !!erreurReferences">{{ quete ? "Enregistrer" : "Ajouter" }}</button>
+        <button v-if="quete" type="button" class="btn secondary" @click="emit('annuler')">Annuler</button>
+      </div>
+    </form>
+  </section>
 </template>
 
 <style scoped>

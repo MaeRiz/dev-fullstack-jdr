@@ -5,17 +5,17 @@ const emit = defineEmits(['modifier', 'dupliquer', 'supprimer']);
 
 <template>
   <li>
-  <h2>{{ contenu.nom }}</h2>
-  <p class="description">{{ (contenu.type === 'indice' ? contenu.texte : contenu.description) || 'Aucun détail renseigné.' }}</p>
-  <details v-if="contenu.commentaire">
-    <summary>Commentaire MJ</summary>
-    <p class="description">{{ contenu.commentaire }}</p>
-  </details>
-  <div class="actions">
-    <button type="button" class="btn secondary" :aria-label="`Modifier ${contenu.nom}`" @click="emit('modifier', contenu.id)">Modifier</button>
-    <button type="button" class="btn secondary" :aria-label="`Dupliquer ${contenu.nom}`" @click="emit('dupliquer', contenu.id)">Dupliquer</button>
-    <button type="button" class="btn supprimer" :aria-label="`Supprimer ${contenu.nom}`" @click="emit('supprimer', contenu.id)">Supprimer</button>
-  </div>
+    <h2>{{ contenu.nom }}</h2>
+    <p class="description">{{ (contenu.type === "indice" ? contenu.texte : contenu.description) || "Aucun détail renseigné." }}</p>
+    <details v-if="contenu.commentaire">
+      <summary>Commentaire MJ</summary>
+      <p class="description">{{ contenu.commentaire }}</p>
+    </details>
+    <div class="actions">
+      <button type="button" class="btn secondary" :aria-label="`Modifier ${contenu.nom}`" @click="emit('modifier', contenu.id)">Modifier</button>
+      <button type="button" class="btn secondary" :aria-label="`Dupliquer ${contenu.nom}`" @click="emit('dupliquer', contenu.id)">Dupliquer</button>
+      <button type="button" class="btn supprimer" :aria-label="`Supprimer ${contenu.nom}`" @click="emit('supprimer', contenu.id)">Supprimer</button>
+    </div>
   </li>
 </template>
 

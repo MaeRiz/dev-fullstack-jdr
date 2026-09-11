@@ -1,10 +1,10 @@
 <script setup></script>
 
 <template>
-	<nav>
-		<RouterLink :to="{ name: 'mj-liste-campagnes' }">MJ</RouterLink>
-		<RouterLink :to="{ name: 'joueur-progression' }">Joueur</RouterLink>
-	</nav>
+  <nav>
+    <RouterLink :to="{ name: 'mj-liste-campagnes' }">MJ</RouterLink>
+    <RouterLink :to="{ name: 'joueur-progression' }">Joueur</RouterLink>
+  </nav>
 </template>
 
 <style scoped>

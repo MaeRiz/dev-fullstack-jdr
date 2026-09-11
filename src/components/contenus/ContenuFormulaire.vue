@@ -56,52 +56,21 @@ function gererSubmit() {
       </div>
       <div v-if="type === 'indice'">
         <label for="contenu-texte">Texte de l’indice</label>
-        <textarea
-          id="contenu-texte"
-          class="control"
-          v-model="formulaire.texte"
-          rows="4"
-        ></textarea>
+        <textarea id="contenu-texte" class="control" v-model="formulaire.texte" rows="4"></textarea>
       </div>
       <div v-else>
         <label for="contenu-description">Description</label>
-        <textarea
-          id="contenu-description"
-          class="control"
-          v-model="formulaire.description"
-          rows="4"
-        ></textarea>
+        <textarea id="contenu-description" class="control" v-model="formulaire.description" rows="4"></textarea>
       </div>
       <div>
         <label for="contenu-commentaire">Commentaire réservé au MJ</label>
-        <textarea
-          id="contenu-commentaire"
-          class="control"
-          v-model="formulaire.commentaire"
-          rows="3"
-        ></textarea>
+        <textarea id="contenu-commentaire" class="control" v-model="formulaire.commentaire" rows="3"></textarea>
       </div>
       <p v-if="erreur" role="alert">{{ erreur }}</p>
       <div class="actions">
-        <button type="submit" class="btn" :disabled="desactive">
-          {{ contenu ? "Enregistrer" : "Ajouter" }}
-        </button>
-        <button
-          v-if="['lieu', 'objet'].includes(type) && !contenu"
-          type="button"
-          class="btn secondary"
-          @click="preFill"
-        >
-          Générer aléatoirement
-        </button>
-        <button
-          v-if="contenu"
-          type="button"
-          class="btn secondary"
-          @click="emit('annuler')"
-        >
-          Annuler
-        </button>
+        <button type="submit" class="btn" :disabled="desactive">{{ contenu ? "Enregistrer" : "Ajouter" }}</button>
+        <button v-if="['lieu', 'objet'].includes(type) && !contenu" type="button" class="btn secondary" @click="preFill">Générer aléatoirement</button>
+        <button v-if="contenu" type="button" class="btn secondary" @click="emit('annuler')">Annuler</button>
       </div>
     </form>
   </section>

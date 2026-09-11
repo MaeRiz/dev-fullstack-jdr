@@ -3,8 +3,8 @@ import NavMenu from "@/layout/NavMenu.vue";
 </script>
 
 <template>
-	<NavMenu />
-	<router-view />
+  <NavMenu />
+  <router-view />
 </template>
 
 <style scoped>

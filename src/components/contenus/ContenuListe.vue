@@ -7,11 +7,14 @@ const emit = defineEmits(['modifier', 'dupliquer', 'supprimer']);
 
 <template>
   <ul class="contenus">
-    <Contenu v-for="contenu in contenus" :key="contenu.id"
+    <Contenu
+      v-for="contenu in contenus"
+      :key="contenu.id"
       :contenu="contenu"
       @modifier="emit('modifier', $event)"
       @dupliquer="emit('dupliquer', $event)"
-      @supprimer="emit('supprimer', $event)" />
+      @supprimer="emit('supprimer', $event)"
+    />
   </ul>
 </template>
 

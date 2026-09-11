@@ -8,11 +8,11 @@ defineProps({
 </script>
 
 <template>
-	<nav class="sub-nav">
-		<RouterLink v-for="link in links" :key="link.name" :to="{ name: link.name }">
-			{{ link.label }}
-		</RouterLink>
-	</nav>
+  <nav class="sub-nav">
+    <RouterLink v-for="link in links" :key="link.name" :to="{ name: link.name }">
+      {{ link.label }}
+    </RouterLink>
+  </nav>
 </template>
 
 <style scoped>

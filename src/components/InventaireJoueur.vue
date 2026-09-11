@@ -24,30 +24,59 @@ const quantitesRetrait = ref({});
     <p v-if="!joueur.inventaire.length">Ce joueur ne possède aucun objet.</p>
     <ul v-else>
       <li v-for="entree in joueur.inventaire" :key="entree.objetId">
-        <span class="objet">{{ nomObjet(entree.objetId) }} <strong>× {{ entree.quantite }}</strong></span>
+        <span class="objet"
+          >{{ nomObjet(entree.objetId) }} <strong>× {{ entree.quantite }}</strong></span
+        >
         <form @submit.prevent="emit('modifier', entree.objetId, quantitesRetrait[entree.objetId] ?? 1, 'retirer')">
-          <label :for="`retrait-${joueur.id}-${entree.objetId}`">Quantité à retirer
-            <input class="control" :id="`retrait-${joueur.id}-${entree.objetId}`" type="number" min="1" :max="entree.quantite" step="1" required
-              :value="quantitesRetrait[entree.objetId] ?? 1" :disabled="desactive"
-              @input="quantitesRetrait[entree.objetId] = Number($event.target.value)" />
+          <label :for="`retrait-${joueur.id}-${entree.objetId}`"
+            >Quantité à retirer
+            <input
+              class="control"
+              :id="`retrait-${joueur.id}-${entree.objetId}`"
+              type="number"
+              min="1"
+              :max="entree.quantite"
+              step="1"
+              required
+              :value="quantitesRetrait[entree.objetId] ?? 1"
+              :disabled="desactive"
+              @input="quantitesRetrait[entree.objetId] = Number($event.target.value)"
+            />
           </label>
           <button type="submit" class="btn retirer" :disabled="desactive" :aria-label="`Retirer ${nomObjet(entree.objetId)} à ${joueur.nom}`">Retirer</button>
         </form>
       </li>
     </ul>
-    <p v-if="!objets.length" class="aide">Aucun objet disponible. Ajoute un objet dans <RouterLink to="/mj/contenus">la bibliothèque</RouterLink>.</p>
+    <p v-if="!objets.length" class="aide">
+      Aucun objet disponible. Ajoute un objet dans
+      <RouterLink to="/mj/contenus">la bibliothèque</RouterLink>.
+    </p>
     <form v-else class="don" @submit.prevent="emit('modifier', objetId, quantite, 'donner')">
-      <label :for="`objet-${joueur.id}`">Objet à donner
+      <label :for="`objet-${joueur.id}`"
+        >Objet à donner
         <select class="control" :id="`objet-${joueur.id}`" v-model="objetId" :disabled="desactive">
-          <option v-for="objet in objets" :key="objet.id" :value="objet.id">{{ objet.nom }}</option>
+          <option v-for="objet in objets" :key="objet.id" :value="objet.id">
+            {{ objet.nom }}
+          </option>
         </select>
       </label>
-      <label :for="`quantite-${joueur.id}`">Quantité
-        <input class="control" :id="`quantite-${joueur.id}`" v-model.number="quantite" type="number" min="1" :max="Number.MAX_SAFE_INTEGER" step="1" required :disabled="desactive" />
+      <label :for="`quantite-${joueur.id}`"
+        >Quantité
+        <input
+          class="control"
+          :id="`quantite-${joueur.id}`"
+          v-model.number="quantite"
+          type="number"
+          min="1"
+          :max="Number.MAX_SAFE_INTEGER"
+          step="1"
+          required
+          :disabled="desactive"
+        />
       </label>
       <button type="submit" class="btn" :disabled="desactive" :aria-label="`Donner un objet à ${joueur.nom}`">Donner</button>
     </form>
-    <p class="aide">{{ objets.find(objet => objet.id === objetId)?.description }}</p>
+    <p class="aide">{{ objets.find((objet) => objet.id === objetId)?.description }}</p>
   </section>
 </template>
 

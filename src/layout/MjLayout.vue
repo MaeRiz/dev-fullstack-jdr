@@ -10,7 +10,7 @@ const links = [
 </script>
 
 <template>
-	<SubNav :links="links" />
+  <SubNav :links="links" />
 
-	<router-view />
+  <router-view />
 </template>
