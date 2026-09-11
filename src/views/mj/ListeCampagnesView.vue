@@ -112,8 +112,18 @@ async function importer({ target }) {
       <button type="button" class="btn secondary" @click="ouvrirImport">Importer une campagne</button>
     </div>
     <p v-if="!campagnes.length">Aucune campagne pour le moment.</p>
-    <CampagneListe v-else :campagnes="campagnes" :compter-chapitres="compterChapitres" :compter-joueurs="compterJoueurs" :progression="progression" :compter-quetes-terminees="compterQuetesTerminees"
-      @modifier="modifier" @dupliquer="dupliquer" @exporter="exporter" @supprimer="supprimer" />
+    <CampagneListe
+      v-else
+      :campagnes="campagnes"
+      :compter-chapitres="compterChapitres"
+      :compter-joueurs="compterJoueurs"
+      :progression="progression"
+      :compter-quetes-terminees="compterQuetesTerminees"
+      @modifier="modifier"
+      @dupliquer="dupliquer"
+      @exporter="exporter"
+      @supprimer="supprimer"
+    />
   </main>
 </template>
 

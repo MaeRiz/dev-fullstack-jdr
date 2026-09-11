@@ -110,7 +110,9 @@ const progression = computed(() => {
 
 <template>
   <main class="gestion-campagne">
-    <p><RouterLink :to="{ name: 'mj-liste-campagnes' }">← Retour aux campagnes</RouterLink></p>
+    <p>
+      <RouterLink :to="{ name: 'mj-liste-campagnes' }">← Retour aux campagnes</RouterLink>
+    </p>
     <div v-if="campagneId && !campagne">
       <h1>Campagne introuvable</h1>
       <p>Cette campagne n'existe plus.</p>
@@ -121,17 +123,44 @@ const progression = computed(() => {
       <CampagneFormulaire :campagne="campagne" @sauvegarde="sauvegarder" @annuler="router.push({ name: 'mj-liste-campagnes' })" />
       <section v-if="campagne" class="chapitres">
         <header class="entete">
-          <div><h2>Progression de l'aventure</h2><p>{{ progression.termines }} / {{ progression.total }} chapitre(s) terminé(s)</p></div>
+          <div>
+            <h2>Progression de l'aventure</h2>
+            <p>{{ progression.termines }} / {{ progression.total }} chapitre(s) terminé(s)</p>
+          </div>
           <button type="button" @click="nouveauChapitre">Nouveau chapitre</button>
         </header>
-        <div class="barre"><span :style="{ width: `${progression.pourcentage}%` }"></span></div>
+        <div class="barre">
+          <span :style="{ width: `${progression.pourcentage}%` }"></span>
+        </div>
         <p v-if="!chapitres.length">Aucun chapitre pour le moment.</p>
-        <ChapitreCarte v-for="(chapitre, index) in chapitres" :key="chapitre.id" :chapitre="chapitre" :position="index" :total="chapitres.length" :quetes="quetesStore.parChapitre(chapitre.id)" :quetes-terminees="quetesTerminees(chapitre.id)" @ouvrir="ouvrirChapitre" @dupliquer="dupliquerChapitre" @supprimer="supprimerChapitre" @deplacer="deplacerChapitre(chapitre.id, $event)" />
+        <ChapitreCarte
+          v-for="(chapitre, index) in chapitres"
+          :key="chapitre.id"
+          :chapitre="chapitre"
+          :position="index"
+          :total="chapitres.length"
+          :quetes="quetesStore.parChapitre(chapitre.id)"
+          :quetes-terminees="quetesTerminees(chapitre.id)"
+          @ouvrir="ouvrirChapitre"
+          @dupliquer="dupliquerChapitre"
+          @supprimer="supprimerChapitre"
+          @deplacer="deplacerChapitre(chapitre.id, $event)"
+        />
       </section>
       <section v-if="campagne" class="joueurs">
         <header class="entete">
-          <div><h2>Joueurs de la campagne</h2><p>{{ joueurs.length }} joueur(s) rattaché(s) à cette aventure.</p></div>
-          <RouterLink class="bouton" :to="{ name: 'mj-liste-joueurs', query: { campagneId: campagne.id } }">Gérer les joueurs</RouterLink>
+          <div>
+            <h2>Joueurs de la campagne</h2>
+            <p>{{ joueurs.length }} joueur(s) rattaché(s) à cette aventure.</p>
+          </div>
+          <RouterLink
+            class="bouton"
+            :to="{
+              name: 'mj-liste-joueurs',
+              query: { campagneId: campagne.id },
+            }"
+            >Gérer les joueurs</RouterLink
+          >
         </header>
         <p v-if="!joueurs.length">Aucun joueur n'est encore rattaché à cette campagne.</p>
         <div v-else class="liste-joueurs">

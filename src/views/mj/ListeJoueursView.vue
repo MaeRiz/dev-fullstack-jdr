@@ -127,7 +127,9 @@ function supprimer(joueur) {
   <main class="joueurs-page">
     <header class="entete">
       <div>
-        <h1>Joueurs <span class="compteur">{{ joueurs.length }}</span></h1>
+        <h1>
+          Joueurs <span class="compteur">{{ joueurs.length }}</span>
+        </h1>
         <p>Crée et gère les personnages de tes parties.</p>
       </div>
       <button ref="boutonAjouter" class="btn" type="button" :disabled="chargementImpossible || !!formulaire" @click="ouvrirFormulaire()">Ajouter un joueur</button>
@@ -139,30 +141,39 @@ function supprimer(joueur) {
     <p class="confirmation" role="status">{{ message }}</p>
 
     <section v-if="formulaire" class="panel panneau" aria-labelledby="titre-formulaire">
-      <h2 id="titre-formulaire">{{ formulaire.id ? 'Modifier le joueur' : 'Nouveau joueur' }}</h2>
+      <h2 id="titre-formulaire">
+        {{ formulaire.id ? "Modifier le joueur" : "Nouveau joueur" }}
+      </h2>
       <form @submit.prevent="enregistrerFormulaire">
         <div class="champs">
-          <label for="nom">Nom du joueur <span>(obligatoire)</span>
+          <label for="nom"
+            >Nom du joueur <span>(obligatoire)</span>
             <input id="nom" ref="champNom" class="control" v-model="formulaire.nom" required maxlength="100" @input="champNom.setCustomValidity('')" />
           </label>
-          <label for="etat">État
+          <label for="etat"
+            >État
             <select id="etat" class="control" v-model="formulaire.etat">
               <option value="vivant">Vivant</option>
               <option value="mort">Mort</option>
             </select>
           </label>
         </div>
-        <label for="campagne-joueur">Campagne
+        <label for="campagne-joueur"
+          >Campagne
           <select id="campagne-joueur" class="control" v-model="formulaire.campagneId" aria-describedby="aide-campagnes">
             <option :value="null">Sans campagne</option>
-            <option v-for="campagne in campagnesDisponibles" :key="campagne.id" :value="campagne.id">{{ campagne.nom }}</option>
+            <option v-for="campagne in campagnesDisponibles" :key="campagne.id" :value="campagne.id">
+              {{ campagne.nom }}
+            </option>
           </select>
         </label>
         <p id="aide-campagnes" class="aide-campagnes">Un transfert conserve l’inventaire et remet le lieu actuel à zéro.</p>
-        <label for="description">Description
+        <label for="description"
+          >Description
           <textarea id="description" class="control" v-model="formulaire.description" rows="3" maxlength="5000" />
         </label>
-        <label for="commentaire">Commentaire MJ <span>— réservé à cette interface</span>
+        <label for="commentaire"
+          >Commentaire MJ <span>— réservé à cette interface</span>
           <textarea id="commentaire" class="control" v-model="formulaire.commentaireMj" rows="3" maxlength="5000" />
         </label>
         <div class="actions">
@@ -172,14 +183,18 @@ function supprimer(joueur) {
       </form>
     </section>
 
-    <label for="filtre-campagne" class="recherche">Filtrer par campagne
+    <label for="filtre-campagne" class="recherche"
+      >Filtrer par campagne
       <select id="filtre-campagne" class="control" v-model="campagneFiltre" :disabled="!!formulaire" @change="suppressionId = null">
         <option :value="undefined">Toutes les campagnes</option>
         <option :value="null">Sans campagne</option>
-        <option v-for="campagne in campagnesDisponibles" :key="campagne.id" :value="campagne.id">{{ campagne.nom }}</option>
+        <option v-for="campagne in campagnesDisponibles" :key="campagne.id" :value="campagne.id">
+          {{ campagne.nom }}
+        </option>
       </select>
     </label>
-    <label v-if="joueurs.length" for="recherche" class="recherche">Rechercher un joueur
+    <label v-if="joueurs.length" for="recherche" class="recherche"
+      >Rechercher un joueur
       <input id="recherche" class="control" v-model="recherche" type="search" placeholder="Nom ou description" />
     </label>
 
@@ -191,7 +206,22 @@ function supprimer(joueur) {
     <p v-if="joueurs.length">{{ joueursFiltres.length }} joueur(s) affiché(s) sur {{ joueurs.length }}.</p>
 
     <div class="liste">
-      <JoueurCarte v-for="joueur in joueursFiltres" :key="joueur.id" :joueur="joueur" :nom-campagne="nomCampagne" :objets="objetsBibliotheque" :contenus="contenus" :desactive="lectureImpossible || !!formulaire || suppressionId === joueur.id" :suppression="suppressionId === joueur.id" @modifier="ouvrirFormulaire" @dupliquer="dupliquer" @supprimer="suppressionId = joueur.id" @confirmer-suppression="supprimer" @annuler-suppression="suppressionId = null" @modifier-inventaire="changerInventaire" />
+      <JoueurCarte
+        v-for="joueur in joueursFiltres"
+        :key="joueur.id"
+        :joueur="joueur"
+        :nom-campagne="nomCampagne"
+        :objets="objetsBibliotheque"
+        :contenus="contenus"
+        :desactive="lectureImpossible || !!formulaire || suppressionId === joueur.id"
+        :suppression="suppressionId === joueur.id"
+        @modifier="ouvrirFormulaire"
+        @dupliquer="dupliquer"
+        @supprimer="suppressionId = joueur.id"
+        @confirmer-suppression="supprimer"
+        @annuler-suppression="suppressionId = null"
+        @modifier-inventaire="changerInventaire"
+      />
     </div>
   </main>
 </template>

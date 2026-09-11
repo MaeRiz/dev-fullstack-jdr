@@ -1,10 +1,10 @@
 <script setup></script>
 
 <template>
-	<main class="partie-page">
-		<h1>Partie en cours</h1>
-		<p>Le contrôle de la campagne active sera disponible ici.</p>
-	</main>
+  <main class="partie-page">
+    <h1>Partie en cours</h1>
+    <p>Le contrôle de la campagne active sera disponible ici.</p>
+  </main>
 </template>
 
 <style scoped>
