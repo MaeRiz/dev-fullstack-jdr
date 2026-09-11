@@ -114,64 +114,59 @@ function supprimerContenu(id) {
 
 <style scoped>
 .bibliotheque {
-  max-width: 1100px;
-  margin: auto;
-  padding: 1.5rem;
-  font-family: Arial, sans-serif;
-  color: #263238;
+	max-width: 1100px;
+	margin: auto;
+	padding: 1.5rem;
+	font-family: Arial, sans-serif;
+	color: var(--texte);
 }
-
 .categories {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 1.5rem 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin: 1.5rem 0;
 }
-
 .categories button {
-  padding: 0.6rem 1rem;
-  border: 1px solid #bbb;
-  border-radius: 4px;
-  background: white;
-  font: inherit;
-  cursor: pointer;
+	padding: 0.6rem 1rem;
+	border: 1px solid var(--bordure);
+	border-radius: 4px;
+	background: var(--fond-surface);
+	color: var(--texte);
+	font: inherit;
+	cursor: pointer;
 }
-
 .categories button.actif {
-  background: #215ad3;
-  border-color: #215ad3;
-  color: white;
+	background: var(--violet);
+	border-color: var(--violet);
+	color: white;
 }
-
 .colonnes {
-  display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  align-items: start;
-  gap: 1.5rem;
+	display: grid;
+	grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+	align-items: start;
+	gap: 1.5rem;
 }
-
 label {
-  display: block;
-  margin-bottom: 0.5rem;
+	display: block;
+	margin-bottom: 0.5rem;
 }
-
 input {
-  box-sizing: border-box;
-  width: 100%;
-  padding: 0.6rem;
-  border: 1px solid #999;
-  border-radius: 4px;
-  font: inherit;
+	box-sizing: border-box;
+	width: 100%;
+	padding: 0.6rem;
+	border: 1px solid var(--bordure);
+	background: var(--fond-surface);
+	color: var(--texte);
+	border-radius: 4px;
+	font: inherit;
 }
-
 [role="alert"] {
-  padding: 1rem;
-  background: #fff3d4;
+	padding: 1rem;
+	background: #4b3920;
 }
-
 @media (max-width: 700px) {
-  .colonnes {
-    grid-template-columns: 1fr;
-  }
+	.colonnes {
+		grid-template-columns: 1fr;
+	}
 }
 </style>

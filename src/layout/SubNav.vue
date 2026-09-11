@@ -21,27 +21,22 @@ defineProps({
 	flex-wrap: wrap;
 	gap: 0.4rem;
 	padding: 0.6rem 1rem;
-	background: #f3f4f6;
-	border-bottom: 1px solid #ddd;
+	background: #211b30;
+	border-bottom: 1px solid #3b3153;
 }
-
 .sub-nav a {
 	padding: 0.3rem 0.7rem;
 	border-radius: 999px;
 	text-decoration: none;
-	color: #263238;
+	color: #d8d0ed;
 	font-size: 0.85rem;
-	transition:
-		background-color 0.15s ease,
-		color 0.15s ease;
+	transition: background-color 0.15s ease, color 0.15s ease;
 }
-
 .sub-nav a:hover {
-	background: white;
+	background: #35294f;
 }
-
 .sub-nav a.router-link-exact-active {
-	background: #215ad3;
+	background: var(--violet);
 	color: white;
 	font-weight: 600;
 }

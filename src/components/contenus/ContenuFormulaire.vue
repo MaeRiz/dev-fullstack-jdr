@@ -47,17 +47,18 @@ function gererSubmit() {
 </script>
 
 <template>
-  <section class="formulaire">
+  <section class="panel formulaire">
     <h2>{{ contenu ? "Modifier" : "Ajouter" }} un {{ libelleType }}</h2>
     <form @submit.prevent="gererSubmit">
       <div>
         <label for="contenu-nom">Nom (obligatoire)</label>
-        <input id="contenu-nom" type="text" v-model="formulaire.nom" required />
+        <input id="contenu-nom" class="control" type="text" v-model="formulaire.nom" required />
       </div>
       <div v-if="type === 'indice'">
         <label for="contenu-texte">Texte de l’indice</label>
         <textarea
           id="contenu-texte"
+          class="control"
           v-model="formulaire.texte"
           rows="4"
         ></textarea>
@@ -66,6 +67,7 @@ function gererSubmit() {
         <label for="contenu-description">Description</label>
         <textarea
           id="contenu-description"
+          class="control"
           v-model="formulaire.description"
           rows="4"
         ></textarea>
@@ -74,19 +76,20 @@ function gererSubmit() {
         <label for="contenu-commentaire">Commentaire réservé au MJ</label>
         <textarea
           id="contenu-commentaire"
+          class="control"
           v-model="formulaire.commentaire"
           rows="3"
         ></textarea>
       </div>
       <p v-if="erreur" role="alert">{{ erreur }}</p>
       <div class="actions">
-        <button type="submit" :disabled="desactive">
+        <button type="submit" class="btn" :disabled="desactive">
           {{ contenu ? "Enregistrer" : "Ajouter" }}
         </button>
         <button
           v-if="['lieu', 'objet'].includes(type) && !contenu"
           type="button"
-          class="secondaire"
+          class="btn secondary"
           @click="preFill"
         >
           Générer aléatoirement
@@ -94,7 +97,7 @@ function gererSubmit() {
         <button
           v-if="contenu"
           type="button"
-          class="secondaire"
+          class="btn secondary"
           @click="emit('annuler')"
         >
           Annuler
@@ -105,67 +108,17 @@ function gererSubmit() {
 </template>
 
 <style scoped>
-.formulaire {
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background: #f3f4f6;
-}
-
 h2 {
-  margin-top: 0;
-  font-size: 1.2rem;
+	margin-top: 0;
+	font-size: 1.2rem;
 }
-
 form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
 }
-
-label {
-  display: block;
-  margin-bottom: 0.4rem;
-}
-
-input,
-textarea {
-  box-sizing: border-box;
-  width: 100%;
-  padding: 0.6rem;
-  border: 1px solid #999;
-  border-radius: 4px;
-  font: inherit;
-}
-
-textarea {
-  resize: vertical;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-button {
-  padding: 0.6rem 1rem;
-  border: 1px solid #215ad3;
-  border-radius: 4px;
-  background: #215ad3;
-  color: white;
-  font: inherit;
-  cursor: pointer;
-}
-
-button.secondaire {
-  border-color: #999;
-  background: white;
-  color: #263238;
-}
-
 [role="alert"] {
-  margin: 0;
-  color: #a02020;
+	margin: 0;
+	color: #ffb4c5;
 }
 </style>
