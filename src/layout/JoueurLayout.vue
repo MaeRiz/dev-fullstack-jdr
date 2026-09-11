@@ -23,11 +23,14 @@ const links = [
 </script>
 
 <template>
-	<SubNav :links="links" />
+  <SubNav :links="links" />
 
   <div class="espace-joueur">
     <header class="entete-joueur">
-      <div><p class="surtitre-joueur">Espace joueur</p><h1>{{ lecture.campagne?.nom ?? 'Ta prochaine aventure' }}</h1></div>
+      <div>
+        <p class="surtitre-joueur">Espace joueur</p>
+        <h1>{{ lecture.campagne?.nom ?? "Ta prochaine aventure" }}</h1>
+      </div>
       <button type="button" class="secondaire-joueur" @click="actualiser">Actualiser la partie</button>
     </header>
     <p v-if="lecture.erreur" class="alerte-joueur" role="alert">{{ lecture.erreur }}</p>
@@ -35,14 +38,30 @@ const links = [
     <p v-if="lecture.problemeCampagne" class="vide-joueur">{{ lecture.problemeCampagne }}</p>
     <div v-if="lecture.pret && lecture.campagne">
       <div class="carte-joueur choix-personnage">
-        <label for="personnage-joueur">Ton personnage
-          <select id="personnage-joueur" :value="lecture.personnage?.id ?? ''" @change="lecture.executer({ type: 'selectionner', id: $event.target.value || null })">
+        <label for="personnage-joueur"
+          >Ton personnage
+          <select
+            id="personnage-joueur"
+            :value="lecture.personnage?.id ?? ''"
+            @change="
+              lecture.executer({
+                type: 'selectionner',
+                id: $event.target.value || null,
+              })
+            "
+          >
             <option value="">Choisir un joueur</option>
-            <option v-for="joueur in lecture.personnages" :key="joueur.id" :value="joueur.id">{{ joueur.nom }} — {{ joueur.etat === 'mort' ? 'Mort' : 'Vivant' }}</option>
+            <option v-for="joueur in lecture.personnages" :key="joueur.id" :value="joueur.id">
+              {{ joueur.nom }} —
+              {{ joueur.etat === "mort" ? "Mort" : "Vivant" }}
+            </option>
           </select>
         </label>
         <div v-if="lecture.personnage">
-          <p><strong>{{ lecture.personnage.nom }}</strong> · {{ lecture.personnage.etat === 'mort' ? 'Mort' : 'Vivant' }} · {{ lecture.lieuActuel?.nom ?? 'Aucun lieu actuel' }}</p>
+          <p>
+            <strong>{{ lecture.personnage.nom }}</strong> · {{ lecture.personnage.etat === "mort" ? "Mort" : "Vivant" }} ·
+            {{ lecture.lieuActuel?.nom ?? "Aucun lieu actuel" }}
+          </p>
           <p class="texte-joueur">{{ lecture.personnage.description }}</p>
         </div>
         <p v-else-if="!lecture.personnages.length">Aucun joueur n’est rattaché à cette campagne. Le MJ doit en ajouter un.</p>
