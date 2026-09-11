@@ -3,10 +3,12 @@ import { computed, nextTick, ref } from 'vue';
 import InventaireJoueur from '@/components/InventaireJoueur.vue';
 import { modifierInventaire, nomObjet } from '@/services/inventaire';
 import { chargerJoueurs, creerJoueur, modifierJoueur, filtrerJoueurs, dupliquerJoueur, sauvegarderJoueurs } from '@/services/joueurs';
-import { campagnesProvisoires, nomCampagne } from '@/services/campagnes';
+import useReferencesJeu from '@/composables/useReferencesJeu';
 import { utiliserBibliotheque } from '@/services/bibliotheque';
 
 const { contenus, objetsBibliotheque, erreurBibliotheque, lectureImpossible } = utiliserBibliotheque();
+const { references, erreurReferences } = useReferencesJeu();
+const nomCampagne = id => id === null ? 'Sans campagne' : references.value.campagnes.find(campagne => campagne.id === id)?.nom ?? 'Campagne indisponible';
 
 const joueurs = ref([]);
 const erreur = ref('');
@@ -30,7 +32,7 @@ const joueursFiltres = computed(() => filtrerJoueurs(joueurs.value, campagneFilt
 
 // Conserver l'accès aux rattachements déjà enregistrés, même hors du catalogue.
 const campagnesDisponibles = computed(() => {
-  const campagnes = [...campagnesProvisoires];
+  const campagnes = [...references.value.campagnes];
   for (const joueur of joueurs.value) {
     if (joueur.campagneId !== null && !campagnes.some(campagne => campagne.id === joueur.campagneId)) {
       campagnes.push({ id: joueur.campagneId, nom: nomCampagne(joueur.campagneId) });
@@ -131,6 +133,7 @@ function supprimer(joueur) {
 
     <p v-if="erreur" class="erreur" role="alert">{{ erreur }}</p>
     <p v-if="erreurBibliotheque" class="erreur" role="alert">{{ erreurBibliotheque }}</p>
+    <p v-if="erreurReferences" class="erreur" role="alert">{{ erreurReferences }}</p>
     <p class="confirmation" role="status">{{ message }}</p>
 
     <section v-if="formulaire" class="panneau" aria-labelledby="titre-formulaire">
@@ -153,7 +156,7 @@ function supprimer(joueur) {
             <option v-for="campagne in campagnesDisponibles" :key="campagne.id" :value="campagne.id">{{ campagne.nom }}</option>
           </select>
         </label>
-        <p id="aide-campagnes" class="aide-campagnes">Campagnes provisoires en attendant la liste du groupe. Un transfert conserve l’inventaire et remet le lieu actuel à zéro.</p>
+        <p id="aide-campagnes" class="aide-campagnes">Un transfert conserve l’inventaire et remet le lieu actuel à zéro.</p>
         <label for="description">Description
           <textarea id="description" v-model="formulaire.description" rows="3" maxlength="5000" />
         </label>

@@ -39,7 +39,8 @@ function modifier(id) {
 }
 
 function dupliquer(id) {
-	quetesStore.dupliquer(id);
+	const copieId = quetesStore.dupliquer(id);
+	quetesStore.modifier(copieId, { recompensesDistribuees: false });
 	quetesStore.enregistrer();
 }
 
