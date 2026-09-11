@@ -14,7 +14,7 @@ function retourJoueur() {
 </script>
 
 <template>
-	<h1>Page introuvable</h1>
-	<button type="button" @click="retourMj">Retour MJ</button>
-	<button type="button" @click="retourJoueur">Retour Joueur</button>
+  <h1>Page introuvable</h1>
+  <button type="button" @click="retourMj">Retour MJ</button>
+  <button type="button" @click="retourJoueur">Retour Joueur</button>
 </template>
