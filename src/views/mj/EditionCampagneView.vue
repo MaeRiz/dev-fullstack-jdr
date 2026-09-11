@@ -122,7 +122,7 @@ const progression = computed(() => {
       <section v-if="campagne" class="chapitres">
         <header class="entete">
           <div><h2>Progression de l'aventure</h2><p>{{ progression.termines }} / {{ progression.total }} chapitre(s) terminé(s)</p></div>
-          <button type="button" @click="nouveauChapitre">Nouveau chapitre</button>
+          <button type="button" class="btn" @click="nouveauChapitre">Nouveau chapitre</button>
         </header>
         <div class="barre"><span :style="{ width: `${progression.pourcentage}%` }"></span></div>
         <p v-if="!chapitres.length">Aucun chapitre pour le moment.</p>
