@@ -1,5 +1,7 @@
 <script setup>
 import { ref } from "vue";
+import useReferencesJeu from '@/composables/useReferencesJeu';
+const { references, erreurReferences } = useReferencesJeu();
 
 const props = defineProps({
 	quete: { type: Object, default: null },
@@ -9,7 +11,10 @@ const emit = defineEmits(["sauvegarde", "annuler"]);
 
 const formulaire = ref({
 	nom: props.quete?.nom || "",
-	etat: props.quete?.etat || "inactive",
+	etat: props.quete?.etat || "active",
+	lieuId: props.quete?.lieuId ?? null,
+	recompensesObjets: JSON.parse(JSON.stringify(props.quete?.recompensesObjets ?? [])),
+	recompensesIndices: [...(props.quete?.recompensesIndices ?? [])],
 	description: props.quete?.description || "",
 	lieu: props.quete?.lieu || "",
 	commentaire: props.quete?.commentaire || "",
@@ -23,7 +28,10 @@ const erreur = ref("");
 function reinitialiser() {
 	formulaire.value = {
 		nom: "",
-		etat: "inactive",
+		etat: "active",
+		lieuId: null,
+		recompensesObjets: [],
+		recompensesIndices: [],
 		description: "",
 		lieu: "",
 		commentaire: "",
@@ -35,6 +43,11 @@ function reinitialiser() {
 }
 
 function gererSubmit() {
+	if (erreurReferences.value) return;
+	if (formulaire.value.recompense.trim()) {
+		erreur.value = 'Convertis l’ancienne récompense en objets ou indices, puis efface sa note pour confirmer.';
+		return;
+	}
 	if (!formulaire.value.nom.trim()) {
 		erreur.value = "Le nom ne peut pas être vide.";
 		return;
@@ -44,10 +57,13 @@ function gererSubmit() {
 		return;
 	}
 	emit("sauvegarde", {
+		lieuId: formulaire.value.lieuId,
+		recompensesObjets: formulaire.value.recompensesObjets,
+		recompensesIndices: formulaire.value.recompensesIndices,
 		nom: formulaire.value.nom.trim(),
 		etat: formulaire.value.etat,
 		description: formulaire.value.description.trim(),
-		lieu: formulaire.value.lieu.trim(),
+		lieu: references.value.contenus.find(contenu => contenu.id === formulaire.value.lieuId)?.nom ?? formulaire.value.lieu.trim(),
 		commentaire: formulaire.value.commentaire.trim(),
 		motDePasseActivation: formulaire.value.motDePasseActivation.trim(),
 		motDePasseResolution: formulaire.value.motDePasseResolution.trim(),
@@ -57,12 +73,18 @@ function gererSubmit() {
 	reinitialiser();
 	erreur.value = "";
 }
+
+function choisirObjet(id, choisi) {
+  if (choisi) formulaire.value.recompensesObjets.push({ objetId: id, quantite: 1 });
+  else formulaire.value.recompensesObjets = formulaire.value.recompensesObjets.filter(objet => objet.objetId !== id);
+}
 </script>
 
 <template>
 	<section>
 		<h2>{{ quete ? "Modifier" : "Ajouter" }} une quête</h2>
 		<form @submit.prevent="gererSubmit">
+			<p v-if="erreurReferences" role="alert">{{ erreurReferences }}</p>
 			<p v-if="chapitres.length === 0" role="alert">
 				Créez d'abord un chapitre : une quête doit lui être rattachée.
 			</p>
@@ -98,7 +120,11 @@ function gererSubmit() {
 
 			<div>
 				<label for="quete-lieu">Lieu</label>
-				<input id="quete-lieu" type="text" v-model="formulaire.lieu" />
+				<select id="quete-lieu" v-model="formulaire.lieuId">
+					<option :value="null">Choisir un lieu de la bibliothèque</option>
+					<option v-for="lieu in references.contenus.filter(contenu => contenu.type === 'lieu' && !contenu.archive)" :key="lieu.id" :value="lieu.id">{{ lieu.nom }}</option>
+				</select>
+				<p v-if="formulaire.lieu && !formulaire.lieuId">Ancien lieu : {{ formulaire.lieu }}. Sélectionne le lieu correspondant.</p>
 			</div>
 
 			<div>
@@ -117,14 +143,24 @@ function gererSubmit() {
 			</div>
 
 			<div>
-				<label for="quete-recompense">Récompense(s)</label>
-				<input id="quete-recompense" type="text" v-model="formulaire.recompense" />
+				<p>Objets récompenses</p>
+				<label v-for="objet in references.contenus.filter(contenu => contenu.type === 'objet' && !contenu.archive)" :key="objet.id" class="case-recompense">
+					<input type="checkbox" :checked="formulaire.recompensesObjets.some(entree => entree.objetId === objet.id)" @change="choisirObjet(objet.id, $event.target.checked)" />{{ objet.nom }}
+				</label>
+				<label v-for="objet in formulaire.recompensesObjets" :key="objet.objetId">Quantité : {{ references.contenus.find(contenu => contenu.id === objet.objetId)?.nom ?? 'Objet indisponible' }}
+					<input v-model.number="objet.quantite" type="number" min="1" :max="Number.MAX_SAFE_INTEGER" step="1" required />
+				</label>
+				<p>Indices partagés</p>
+				<label v-for="indice in references.contenus.filter(contenu => contenu.type === 'indice' && !contenu.archive)" :key="indice.id" class="case-recompense">
+					<input v-model="formulaire.recompensesIndices" type="checkbox" :value="indice.id" />{{ indice.nom }}
+				</label>
+				<label v-if="formulaire.recompense" for="quete-recompense">Ancienne récompense (note à convertir en sélections ci-dessus)<input id="quete-recompense" v-model="formulaire.recompense" type="text" /></label>
 			</div>
 
 			<p v-if="erreur" role="alert">{{ erreur }}</p>
 
 			<div class="actions">
-				<button type="submit" :disabled="chapitres.length === 0">
+				<button type="submit" :disabled="chapitres.length === 0 || !!erreurReferences">
 					{{ quete ? "Enregistrer" : "Ajouter" }}
 				</button>
 				<button v-if="quete" type="button" class="secondaire" @click="emit('annuler')">Annuler</button>
@@ -134,6 +170,8 @@ function gererSubmit() {
 </template>
 
 <style scoped>
+.case-recompense { display: flex; align-items: center; gap: .5rem; }
+.case-recompense input { width: auto; }
 section {
 	padding: 1rem;
 	border: 1px solid #ddd;

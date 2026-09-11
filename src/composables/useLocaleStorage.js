@@ -1,5 +1,13 @@
 import { ref, watch } from 'vue';
 
+let suspension = 0;
+// Les actions de jeu enregistrent plusieurs listes ensemble avant de mettre à
+// jour les stores : ne pas déclencher d'écritures intermédiaires à ce moment-là.
+export function sansPersistance(action) {
+  suspension++;
+  try { return action(); } finally { suspension--; }
+}
+
 export default function useLocaleStorage(cle, donnees) {
   const lectureImpossible = ref(false);
 
@@ -14,6 +22,7 @@ export default function useLocaleStorage(cle, donnees) {
   }
 
   function enregistrer() {
+    if (suspension) return true;
     if (lectureImpossible.value) return false;
     try {
       globalThis.localStorage.setItem(cle, JSON.stringify(donnees.value));
@@ -23,7 +32,7 @@ export default function useLocaleStorage(cle, donnees) {
     }
   }
 
-  watch(donnees, enregistrer, { deep: true });
+  watch(donnees, enregistrer, { deep: true, flush: 'sync' });
 
   return { lectureImpossible, enregistrer };
 }

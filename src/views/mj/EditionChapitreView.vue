@@ -7,7 +7,9 @@ import useQuetesStore from "@/stores/quetes.js";
 import { libelle } from "@/services/catalogueChapitres";
 import { utiliserBibliotheque } from "@/services/bibliotheque";
 import { choixContenus } from "@/services/contenus";
-import { formulaireVide, creerChapitre, modifierChapitre, dupliquerChapitre } from "@/services/chapitres";
+import { formulaireVide, creerChapitre, modifierChapitre, dupliquerChapitre, deplacerQuete } from "@/services/chapitres";
+import { chargerEtatJeu, enregistrerEtatJeu } from "@/services/lectureJoueur";
+import { sansPersistance } from "@/composables/useLocaleStorage";
 
 const campagnesStore = useCampagnesStore();
 const chapitresStore = useChapitresStore();
@@ -48,7 +50,11 @@ const campagnesDisponibles = computed(() => {
 	}
 	return liste;
 });
-const quetesDuChapitre = computed(() => (id) => quetesStore.parChapitre(id));
+const quetesDuChapitre = computed(() => (id) => {
+	const ordre = chapitresStore.parId(id)?.quetes.map(quete => quete.id) ?? [];
+	const rang = id => ordre.includes(id) ? ordre.indexOf(id) : ordre.length;
+	return [...quetesStore.parChapitre(id)].sort((a, b) => rang(a.id) - rang(b.id));
+});
 const listeFiltree = computed(() =>
 	chapitres.value.filter(
 		(chapitre) =>
@@ -62,6 +68,7 @@ const listeFiltree = computed(() =>
 async function ouvrir(chapitre = null) {
 	editionId.value = chapitre?.id ?? null;
 	formulaire.value = chapitre ? JSON.parse(JSON.stringify(chapitre)) : formulaireVide(campagneFiltre.value ?? null);
+	if (chapitre) formulaire.value.quetes = quetesDuChapitre.value(chapitre.id).map(quete => ({ id: quete.id, modeleId: quete.id, nom: quete.nom }));
 	suppressionId.value = null;
 	message.value = "";
 	await nextTick();
@@ -74,9 +81,23 @@ async function fermer() {
 	boutonAjouter.value?.focus();
 }
 function enregistrerListe(liste, confirmation) {
-	if (bloque.value || lectureImpossible.value) return false;
-	chapitres.value = liste;
-	if (!chapitresStore.enregistrer()) {
+	if (bloque.value || lectureImpossible.value || quetesStore.lectureImpossible) return false;
+	try {
+		const avant = chargerEtatJeu();
+		// Conserver la suppression en cascade introduite sur main.
+		const supprimes = avant.chapitres.filter(chapitre => !liste.some(element => element.id === chapitre.id)).map(chapitre => chapitre.id);
+		const apres = { ...avant, chapitres: liste, quetes: avant.quetes.filter(quete => !supprimes.includes(quete.chapitreId)) };
+		for (const chapitre of liste.filter(element => !avant.chapitres.some(original => original.id === element.id))) {
+			for (const reference of chapitre.quetes) {
+				const originale = avant.quetes.find(quete => quete.id === reference.modeleId);
+				if (originale && !apres.quetes.some(quete => quete.id === reference.id)) {
+					apres.quetes.push({ ...JSON.parse(JSON.stringify(originale)), id: reference.id, chapitreId: chapitre.id, recompensesDistribuees: false });
+				}
+			}
+		}
+		enregistrerEtatJeu(avant, apres);
+		sansPersistance(() => { chapitres.value = liste; quetesStore.liste = apres.quetes; });
+	} catch {
 		erreur.value =
 			"Enregistrement impossible : le stockage du navigateur est indisponible ou plein. Les modifications ne sont pas sauvegardées. Tu peux réessayer.";
 		message.value = "";
@@ -106,16 +127,13 @@ function enregistrer() {
 function dupliquer(chapitre) {
 	if (
 		enregistrerListe(
-			[...chapitres.value, dupliquerChapitre(chapitre)],
+			[...chapitres.value, dupliquerChapitre({ ...chapitre, quetes: quetesDuChapitre.value(chapitre.id).map(quete => ({ id: quete.id, modeleId: quete.id, nom: quete.nom })) })],
 			"Chapitre dupliqué avec des quêtes indépendantes.",
 		)
 	)
 		recherche.value = "";
 }
 function supprimer(chapitre) {
-	// suppression en cascade, les quêtes rattachées à ce chapitre
-	quetesStore.supprimerParChapitre(chapitre.id);
-	quetesStore.enregistrer();
 	if (
 		enregistrerListe(
 			chapitres.value.filter((element) => element.id !== chapitre.id),
@@ -283,10 +301,14 @@ function choisirRecompense(objetId, selectionne) {
 						Les quêtes se créent et se rattachent à ce chapitre depuis la page
 						<RouterLink :to="{ name: 'mj-edition-quete' }">Quêtes</RouterLink>.
 					</p>
-					<p v-if="!quetesDuChapitre(editionId).length">Aucune quête associée.</p>
+					<p v-if="!formulaire.quetes.length">Aucune quête associée.</p>
 					<ol v-else class="quetes">
-						<li v-for="quete in quetesDuChapitre(editionId)" :key="quete.id">
-							<span>{{ quete.nom }} — {{ quete.etat }}</span>
+						<li v-for="(quete, index) in formulaire.quetes" :key="quete.id">
+							<span>{{ quete.nom }}</span>
+							<div class="actions">
+								<button type="button" class="secondaire" :disabled="index === 0" :aria-label="`Monter ${quete.nom}`" @click="formulaire.quetes = deplacerQuete(formulaire.quetes, quete.id, -1)">Monter</button>
+								<button type="button" class="secondaire" :disabled="index === formulaire.quetes.length - 1" :aria-label="`Descendre ${quete.nom}`" @click="formulaire.quetes = deplacerQuete(formulaire.quetes, quete.id, 1)">Descendre</button>
+							</div>
 						</li>
 					</ol>
 				</fieldset>
