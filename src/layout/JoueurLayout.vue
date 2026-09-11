@@ -58,7 +58,7 @@ const links = [
 	max-width: 1100px;
 	margin: auto;
 	padding: 1.5rem;
-	color: #263238;
+	color: var(--texte);
 }
 .espace-joueur h1 {
 	margin: 0;
@@ -84,17 +84,17 @@ const links = [
 .surtitre-joueur {
 	margin: 0 0 .5rem;
 	font-size: .85rem;
-	color: #536176;
+	color: var(--texte-secondaire);
 }
 .carte-joueur {
 	padding: 1.1rem;
-	border: 1px solid #d1d5db;
+	border: 1px solid var(--bordure);
 	border-radius: 8px;
-	background: white;
+	background: var(--fond-carte);
 	min-width: 0;
 }
 .choix-personnage {
-	background: #f8fafc;
+	background: var(--fond-surface);
 }
 .grille-joueur {
 	display: grid;
@@ -114,31 +114,32 @@ const links = [
 	width: 100%;
 	margin-top: .5rem;
 	padding: .65rem;
-	border: 1px solid #9ca3af;
+	border: 1px solid var(--bordure);
 	border-radius: 5px;
-	background: white;
-	color: inherit;
+	background: var(--fond-surface);
+	color: var(--texte);
 	font: inherit;
 }
 .espace-joueur button {
 	padding: .65rem .9rem;
-	border: 1px solid #215ad3;
+	border: 1px solid var(--violet);
 	border-radius: 5px;
-	background: #215ad3;
+	background: var(--violet);
 	color: white;
 	cursor: pointer;
 	font: inherit;
 }
 .espace-joueur button.secondaire-joueur {
-	color: #215ad3;
-	background: white;
+	color: var(--texte);
+	border-color: var(--bordure);
+	background: var(--fond-surface);
 }
 .espace-joueur button:disabled {
 	opacity: .5;
 	cursor: not-allowed;
 }
 .espace-joueur :is(input, select, button, summary):focus-visible {
-	outline: 3px solid #215ad3;
+	outline: 3px solid var(--violet-clair);
 	outline-offset: 3px;
 }
 .espace-joueur p, .espace-joueur li {
@@ -154,24 +155,25 @@ const links = [
 }
 .alerte-joueur {
 	padding: 1rem;
-	background: #fff1f2;
-	color: #9f1239;
+	background: #422238;
+	color: #ffb4c5;
 	border-radius: 6px;
 }
 .succes-joueur {
-	color: #166534;
+	color: #8ee0ad;
 	min-height: 1.3rem;
 }
 .vide-joueur {
 	padding: 1rem;
-	background: #f3f4f6;
+	background: var(--fond-surface);
 	border-radius: 6px;
 }
 .etat-joueur {
 	display: inline-block;
 	font-size: .8rem;
 	padding: .25rem .6rem;
-	background: #eef2ff;
+	background: #33275c;
+	color: var(--violet-clair);
 	border-radius: 20px;
 	margin-bottom: .75rem;
 }
